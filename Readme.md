@@ -18,6 +18,8 @@
 | 1   | [day1](day1/day1.go)        | **Курьерская аналитика**:<br>- Статистика доставок<br>- Финансовый калькулятор | 71.25 руб/час → цель 500+ руб/час               |
 | 2   | [day2](day2/day2.go)        | **Анти-прокрастинатор**:<br>- Анализ дня<br>- Мотивация                        | Код ВОПРЕКИ депрессии - главная победа          |
 
+![Auto Update](https://github.com/Folombas/100daysGo/workflows/Update%20README%20Daily/badge.svg)
+
 ## Progress Visualization
 
 ```go
