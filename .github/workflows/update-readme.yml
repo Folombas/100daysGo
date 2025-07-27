@@ -1,0 +1,31 @@
+name: Update README Daily # Название workflow
+
+on: # Триггеры запуска
+  schedule:
+    - cron: "0 0 * * *" # Каждый день в 00:00 UTC
+  workflow_dispatch: # Ручной запуск через UI GitHub
+
+jobs:
+  update: # Идентификатор задачи
+    runs-on: ubuntu-latest # Окружение
+
+    steps: # Последовательность шагов
+      - name: Checkout repository
+        uses: actions/checkout@v3 # Готовое действие
+
+      - name: Set up Go
+        uses: actions/setup-go@v3 # Ещё одно действие
+        with: # Параметры
+          go-version: "1.24"
+
+      - name: Run README Updater
+        run: | # Кастомные команды
+          go run ./utils/readme_updater/main.go
+
+      - name: Commit changes
+        run: |
+          git config user.name "README Bot"
+          git config user.email "readme-bot@example.com"
+          git add README.md
+          git commit -m "Auto-update README"
+          git push
