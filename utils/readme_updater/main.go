@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -96,7 +97,7 @@ func main() {
 }
 
 func loadProjectData() ProjectData {
-	data, err := os.ReadFile(DataFilePath)
+	// Проверка существования файла
 	if _, err := os.Stat(DataFilePath); os.IsNotExist(err) {
 		fmt.Println("⚠️ Файл прогресса не найден, создается новый")
 		return ProjectData{
@@ -105,14 +106,18 @@ func loadProjectData() ProjectData {
 		}
 	}
 
+	// Чтение файла (если он существует)
+	data, err := os.ReadFile(DataFilePath)
+	if err != nil {
+		log.Fatalf("Ошибка чтения файла прогресса: %v", err)
+	}
+
+	// Декодирование JSON
 	var projectData ProjectData
 	if err := json.Unmarshal(data, &projectData); err != nil {
-		fmt.Printf("❌ Ошибка чтения данных: %v\n", err)
-		return ProjectData{
-			StartDate: StartDate,
-			Days:      []DayRecord{},
-		}
+		log.Fatalf("Ошибка парсинга JSON: %v", err)
 	}
+
 	return projectData
 }
 
