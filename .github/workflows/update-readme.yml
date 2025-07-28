@@ -1,31 +1,42 @@
-name: Update README Daily # Название workflow
+name: Update README Daily
 
-on: # Триггеры запуска
+on:
   schedule:
-    - cron: "0 0 * * *" # Каждый день в 00:00 UTC
-  workflow_dispatch: # Ручной запуск через UI GitHub
+    - cron: "0 14 * * *" # 17:00 по Москве (UTC+3)
+  workflow_dispatch:
 
 jobs:
-  update: # Идентификатор задачи
-    runs-on: ubuntu-latest # Окружение
-
-    steps: # Последовательность шагов
+  update:
+    runs-on: ubuntu-latest
+    steps:
       - name: Checkout repository
-        uses: actions/checkout@v3 # Готовое действие
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Calculate current day
+        id: calculate-day
+        run: |
+          START_DATE="2025-07-25"
+          CURRENT_DATE=$(date -u +%F)
+          DAYS=$(( ($(date -d "$CURRENT_DATE" +%s) - $(date -d "$START_DATE" +%s)) / 86400 ))
+          echo "day=$DAYS" >> $GITHUB_OUTPUT
 
       - name: Set up Go
-        uses: actions/setup-go@v3 # Ещё одно действие
-        with: # Параметры
-          go-version: "1.24"
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.22"
 
-      - name: Run README Updater
-        run: | # Кастомные команды
-          go run ./utils/readme_updater/main.go
+      - name: Update README
+        run: |
+          cd utils/readme_updater
+          go run main.go
+          cd ../..
 
       - name: Commit changes
         run: |
           git config user.name "README Bot"
           git config user.email "readme-bot@example.com"
           git add README.md
-          git commit -m "Auto-update README"
+          git commit -m "Auto-update README (Day ${{ steps.calculate-day.outputs.day }})" || echo "No changes"
           git push

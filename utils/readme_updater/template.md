@@ -3,6 +3,7 @@
 **Start Date**: {{.StartDate}}  
 **Current Day**: {{.CurrentDay}}/100  
 **Current Streak**: 🔥 {{.Streak}} DAYS!  
+**Last Updated**: {{.LastUpdated}}  
 **Goal**: Become job-ready Go developer
 
 ## Why?
@@ -23,14 +24,14 @@ import "fmt"
 
 func main() {
     fmt.Println("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓")
-    fmt.Println("┃ ПРОГРЕСС: {{.ProgressPercent}}%{{.ProgressPadding}}┃")
+    fmt.Println("┃ {{.ProgressPercent}}%{{.ProgressPadding}}┃")
     fmt.Println("┃                                         ┃")
     fmt.Println("┃ {{.ProgressBar}}┃")
     fmt.Println("┃                                         ┃")
     fmt.Println("┃  Дней без игр: {{.DaysWithoutGames}}                        ┃")
     fmt.Println("┃  Коммитов: {{.CommitCount}}                            ┃")
     fmt.Println("┃  Строк кода: {{.LinesOfCode}}                        ┃")
+    fmt.Println("┃  Следующий рубеж: Day {{.NextMilestone}}             ┃")
     fmt.Println("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛")
-    fmt.Println("  NEXT MILESTONE: Day {{.NextMilestone}} → 500 строк кода")
 }
 ```
