@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"text/template"
@@ -17,7 +18,7 @@ import (
 const (
 	TotalDays        = 100
 	ProgressBarSize  = 40
-	DataFilePath     = "progress.json"
+	DataFilePath     = "utils/readme_updater/progress.json"
 	TemplateFilePath = "utils/readme_updater/template.md"
 	ReadmeFilePath   = "README.md"
 	StartDate        = "2025-07-25T00:00:00Z"
@@ -55,18 +56,21 @@ type ProjectData struct {
 func main() {
 	startTime := time.Now()
 	fmt.Println("🚀 Запуск генератора README...")
-
+	
 	// Загрузка данных проекта
 	projectData := loadProjectData()
 	currentDay := calculateCurrentDay(projectData.StartDate)
-
+	
+	// Автоматически добавляем новый день, если сегодня еще не добавлен
+	addNewDayIfNeeded(&projectData)
+	
 	// Подготовка данных для шаблона
 	templateData := ProgressData{
 		StartDate:        formatDate(projectData.StartDate),
 		CurrentDay:       currentDay,
 		Streak:           calculateStreak(projectData.Days),
 		ProgressTable:    generateProgressTable(projectData.Days),
-		ProgressPercent:  currentDay, // Процент = номер дня
+		ProgressPercent:  currentDay,
 		ProgressPadding:  calculateProgressPadding(currentDay),
 		ProgressBar:      generateProgressBar(currentDay),
 		DaysWithoutGames: currentDay,
@@ -82,9 +86,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Сохраняем обновленные данные прогресса
+	saveProjectData(projectData)
+
 	fmt.Printf("✅ README успешно обновлен за %v\n", time.Since(startTime))
-	fmt.Printf("📊 Прогресс: %d%% | 🚀 Стрик: %d дней | 💾 Коммитов: %s\n",
-		currentDay, templateData.Streak, templateData.CommitCount)
+	fmt.Printf("📊 Прогресс: %d%% | 🚀 Стрик: %d дней | 💾 Коммитов: %s | 📜 Строк кода: %d\n", 
+		templateData.ProgressPercent, templateData.Streak, templateData.CommitCount, templateData.LinesOfCode)
 }
 
 func loadProjectData() ProjectData {
@@ -93,11 +100,7 @@ func loadProjectData() ProjectData {
 		fmt.Println("⚠️ Файл прогресса не найден, используются данные по умолчанию")
 		return ProjectData{
 			StartDate: StartDate,
-			Days: []DayRecord{
-				{0, "25.07.2025", "Начало пути", "Отказ от игр, фокус на Go", 15},
-				{1, "26.07.2025", "Основы Go", "Синтаксис, переменные, типы", 42},
-				{2, "27.07.2025", "Работа с JSON", "Маршалинг/анмаршалинг данных", 28},
-			},
+			Days:      []DayRecord{},
 		}
 	}
 
@@ -112,6 +115,18 @@ func loadProjectData() ProjectData {
 	return projectData
 }
 
+func saveProjectData(data ProjectData) {
+	file, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		fmt.Printf("⚠️ Ошибка сериализации данных: %v\n", err)
+		return
+	}
+
+	if err := os.WriteFile(DataFilePath, file, 0644); err != nil {
+		fmt.Printf("⚠️ Ошибка записи в файл: %v\n", err)
+	}
+}
+
 func calculateCurrentDay(startDate string) int {
 	start, err := time.Parse(time.RFC3339, startDate)
 	if err != nil {
@@ -123,7 +138,7 @@ func calculateCurrentDay(startDate string) int {
 	if days < 0 {
 		return 0
 	}
-	return days
+	return days + 1
 }
 
 func calculateStreak(days []DayRecord) int {
@@ -138,8 +153,9 @@ func calculateStreak(days []DayRecord) int {
 	}
 
 	// Рассчитываем стрик
-	currentDate := time.Now()
 	streak := 0
+	currentDate := time.Now()
+
 	for {
 		dateStr := currentDate.Format("02.01.2006")
 		if !dateMap[dateStr] {
@@ -152,14 +168,22 @@ func calculateStreak(days []DayRecord) int {
 }
 
 func generateProgressTable(days []DayRecord) string {
+	// Сортируем дни по номеру в обратном порядке (последние дни вверху)
+	sort.Slice(days, func(i, j int) bool {
+		return days[i].Number > days[j].Number
+	})
+
 	var table strings.Builder
 	table.WriteString("| День | Дата | Тема | Ключевое понимание |\n")
 	table.WriteString("|------|------|------|---------------------|\n")
 
 	for _, day := range days {
+		// Ограничиваем длину строк для таблицы
+		title := truncate(day.Title, 20)
+		insight := truncate(day.KeyInsight, 30)
 		table.WriteString(fmt.Sprintf(
 			"| Day%d | %s | %s | %s |\n",
-			day.Number, day.Date, truncate(day.Title, 20), truncate(day.KeyInsight, 30),
+			day.Number, day.Date, title, insight,
 		))
 	}
 	return table.String()
@@ -233,7 +257,7 @@ func countLinesOfCode() int {
 	}()
 
 	// Обход файловой системы
-	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk("..", func(path string, info os.FileInfo, err error) error { // Обход с корня репозитория
 		if err != nil {
 			return nil
 		}
@@ -281,6 +305,9 @@ func formatDate(date string) string {
 }
 
 func generateReadme(data ProgressData) error {
+	absTemplatePath, _ := filepath.Abs(TemplateFilePath)
+	fmt.Printf("⏳ Чтение шаблона из: %s\n", absTemplatePath)
+
 	templateContent, err := os.ReadFile(TemplateFilePath)
 	if err != nil {
 		return fmt.Errorf("ошибка чтения шаблона: %w", err)
@@ -304,4 +331,26 @@ func generateReadme(data ProgressData) error {
 		return fmt.Errorf("ошибка записи README: %w", err)
 	}
 	return nil
+}
+
+func addNewDayIfNeeded(projectData *ProjectData) {
+	today := time.Now().Format("02.01.2006")
+	lastDayIndex := len(projectData.Days) - 1
+
+	// Если сегодняшний день уже есть, ничего не делаем
+	if lastDayIndex >= 0 && projectData.Days[lastDayIndex].Date == today {
+		return
+	}
+
+	// Создаем новую запись для сегодня
+	newDay := DayRecord{
+		Number:     len(projectData.Days),
+		Date:       today,
+		Title:      "В процессе...",
+		KeyInsight: "День ещё не завершён",
+		LinesCode:  0,
+	}
+
+	projectData.Days = append(projectData.Days, newDay)
+	fmt.Printf("➕ Добавлен новый день: Day%d (%s)\n", newDay.Number, today)
 }
