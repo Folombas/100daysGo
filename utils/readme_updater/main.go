@@ -97,8 +97,8 @@ func main() {
 
 func loadProjectData() ProjectData {
 	data, err := os.ReadFile(DataFilePath)
-	if err != nil {
-		fmt.Println("⚠️ Файл прогресса не найден, используются данные по умолчанию")
+	if _, err := os.Stat(DataFilePath); os.IsNotExist(err) {
+		fmt.Println("⚠️ Файл прогресса не найден, создается новый")
 		return ProjectData{
 			StartDate: StartDate,
 			Days:      []DayRecord{},
@@ -310,10 +310,16 @@ func formatDate(date string) string {
 }
 
 func generateReadme(data ProgressData) error {
-	absTemplatePath, _ := filepath.Abs(TemplateFilePath)
-	fmt.Printf("⏳ Чтение шаблона из: %s\n", absTemplatePath)
+	// Получаем абсолютный путь к шаблону
+	baseDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("ошибка получения текущей директории: %w", err)
+	}
 
-	templateContent, err := os.ReadFile(TemplateFilePath)
+	templatePath := filepath.Join(baseDir, "utils", "readme_updater", "template.md")
+	fmt.Printf("⏳ Чтение шаблона из: %s\n", templatePath)
+
+	templateContent, err := os.ReadFile(templatePath)
 	if err != nil {
 		return fmt.Errorf("ошибка чтения шаблона: %w", err)
 	}
@@ -332,14 +338,15 @@ func generateReadme(data ProgressData) error {
 		return fmt.Errorf("ошибка выполнения шаблона: %w", err)
 	}
 
-	if err := os.WriteFile(ReadmeFilePath, output.Bytes(), 0644); err != nil {
+	readmePath := filepath.Join(baseDir, "README.md")
+	if err := os.WriteFile(readmePath, output.Bytes(), 0644); err != nil {
 		return fmt.Errorf("ошибка записи README: %w", err)
 	}
 	return nil
 }
 
 func addNewDayIfNeeded(projectData *ProjectData) {
-	today := time.Now().Format("02.01.2006")
+	today := time.Now().UTC().Add(3 * time.Hour).Format("02.01.2006") // UTC+3
 
 	// Проверяем, есть ли сегодняшний день
 	for _, day := range projectData.Days {

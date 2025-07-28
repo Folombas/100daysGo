@@ -2,7 +2,7 @@ name: Update README Daily
 
 on:
   schedule:
-    - cron: "0 14 * * *" # 17:00 по Москве (UTC+3)
+    - cron: "0 14 * * *"  # 17:00 по Москве (UTC+3)
   workflow_dispatch:
 
 permissions:
@@ -25,7 +25,7 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: "1.22"
-
+          
       - name: Set UTF-8 encoding
         run: |
           echo "LANG=C.UTF-8" >> $GITHUB_ENV
@@ -34,21 +34,20 @@ jobs:
       - name: Update README
         run: |
           echo "🔄 Запуск генератора README..."
-          cd utils/readme_updater
-          go run main.go
-          cd ../..
+          # Запускаем из корня репозитория
+          go run ./utils/readme_updater/main.go
           echo "✅ README обновлен"
-
+          
       - name: Commit and push changes
         run: |
           # Настраиваем Git
           git config --global user.name "README Bot"
           git config --global user.email "readme-bot@example.com"
           git config --global core.quotepath off
-
+          
           # Добавляем изменения
           git add README.md utils/readme_updater/progress.json
-
+          
           # Проверяем есть ли изменения
           if git diff --cached --quiet; then
             echo "⏭️ Нет изменений для коммита"
