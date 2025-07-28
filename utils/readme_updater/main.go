@@ -136,10 +136,7 @@ func calculateCurrentDay(startDate string) int {
 	}
 
 	days := int(time.Since(start).Hours() / 24)
-	if days < 0 {
-		return 0
-	}
-	return days + 1 // +1 чтобы считать с дня 1
+	return days // возвращаем количество дней без +1
 }
 
 func calculateStreak(days []DayRecord) int {
