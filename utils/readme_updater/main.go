@@ -12,6 +12,7 @@ import (
 	"sync"
 	"text/template"
 	"time"
+	"unicode/utf8"
 )
 
 // Конфигурация проекта
@@ -56,21 +57,21 @@ type ProjectData struct {
 func main() {
 	startTime := time.Now()
 	fmt.Println("🚀 Запуск генератора README...")
-	
+
 	// Загрузка данных проекта
 	projectData := loadProjectData()
 	currentDay := calculateCurrentDay(projectData.StartDate)
-	
+
 	// Автоматически добавляем новый день, если сегодня еще не добавлен
 	addNewDayIfNeeded(&projectData)
-	
+
 	// Подготовка данных для шаблона
 	templateData := ProgressData{
 		StartDate:        formatDate(projectData.StartDate),
 		CurrentDay:       currentDay,
 		Streak:           calculateStreak(projectData.Days),
 		ProgressTable:    generateProgressTable(projectData.Days),
-		ProgressPercent:  currentDay,
+		ProgressPercent:  calculateProgressPercent(currentDay),
 		ProgressPadding:  calculateProgressPadding(currentDay),
 		ProgressBar:      generateProgressBar(currentDay),
 		DaysWithoutGames: currentDay,
@@ -90,7 +91,7 @@ func main() {
 	saveProjectData(projectData)
 
 	fmt.Printf("✅ README успешно обновлен за %v\n", time.Since(startTime))
-	fmt.Printf("📊 Прогресс: %d%% | 🚀 Стрик: %d дней | 💾 Коммитов: %s | 📜 Строк кода: %d\n", 
+	fmt.Printf("📊 Прогресс: %d%% | 🚀 Стрик: %d дней | 💾 Коммитов: %s | 📜 Строк кода: %d\n",
 		templateData.ProgressPercent, templateData.Streak, templateData.CommitCount, templateData.LinesOfCode)
 }
 
@@ -138,7 +139,7 @@ func calculateCurrentDay(startDate string) int {
 	if days < 0 {
 		return 0
 	}
-	return days + 1
+	return days + 1 // +1 чтобы считать с дня 1
 }
 
 func calculateStreak(days []DayRecord) int {
@@ -189,20 +190,27 @@ func generateProgressTable(days []DayRecord) string {
 	return table.String()
 }
 
+// Правильное усечение строк с учетом UTF-8
 func truncate(s string, max int) string {
-	if len(s) <= max {
+	if utf8.RuneCountInString(s) <= max {
 		return s
 	}
-	return s[:max-3] + "..."
+	runes := []rune(s)
+	return string(runes[:max-3]) + "..."
+}
+
+func calculateProgressPercent(currentDay int) int {
+	return currentDay
 }
 
 func calculateProgressPadding(percent int) string {
 	text := fmt.Sprintf("ПРОГРЕСС: %d%%", percent)
 	requiredLength := 30
-	if len(text) >= requiredLength {
+	padding := requiredLength - utf8.RuneCountInString(text)
+	if padding <= 0 {
 		return ""
 	}
-	return strings.Repeat(" ", requiredLength-len(text))
+	return strings.Repeat(" ", padding)
 }
 
 func generateProgressBar(percent int) string {
@@ -257,7 +265,7 @@ func countLinesOfCode() int {
 	}()
 
 	// Обход файловой системы
-	err := filepath.Walk("..", func(path string, info os.FileInfo, err error) error { // Обход с корня репозитория
+	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return nil
 		}
@@ -335,11 +343,12 @@ func generateReadme(data ProgressData) error {
 
 func addNewDayIfNeeded(projectData *ProjectData) {
 	today := time.Now().Format("02.01.2006")
-	lastDayIndex := len(projectData.Days) - 1
 
-	// Если сегодняшний день уже есть, ничего не делаем
-	if lastDayIndex >= 0 && projectData.Days[lastDayIndex].Date == today {
-		return
+	// Проверяем, есть ли сегодняшний день
+	for _, day := range projectData.Days {
+		if day.Date == today {
+			return
+		}
 	}
 
 	// Создаем новую запись для сегодня

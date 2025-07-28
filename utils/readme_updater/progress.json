@@ -1,33 +1,47 @@
 {
-    "startDate": "2025-07-25T00:00:00Z",
-    "days": [
+  "startDate": "2025-07-25T00:00:00Z",
+  "days": [
     {
-        "number": 0,
-        "date": "25.07.2025",
-        "title": "Начало пути",
-        "keyInsight": "Отказ от игр, фокус на Go",
-        "linesCode": 15
+      "number": 5,
+      "date": "29.07.2025",
+      "title": "В процессе...",
+      "keyInsight": "День ещё не завершён",
+      "linesCode": 0
     },
     {
-        "number": 1,
-        "date": "26.07.2025",
-        "title": "Основы Go",
-        "keyInsight": "Синтаксис, переменные, типы",
-        "linesCode": 42
+      "number": 4,
+      "date": "29.07.2025",
+      "title": "Работа с файлами",
+      "keyInsight": "Чтение/запись файлов",
+      "linesCode": 38
     },
     {
-        "number": 2,
-        "date": "27.07.2025",
-        "title": "Работа с JSON",
-        "keyInsight": "Маршалинг/анмаршалинг данных",
-        "linesCode": 28
+      "number": 3,
+      "date": "28.07.2025",
+      "title": "Пакет Reflect",
+      "keyInsight": "Анализ типов в рантайме",
+      "linesCode": 64
     },
     {
-        "number": 3,
-        "date": "28.07.2025",
-        "title": "Пакет Reflect",
-        "keyInsight": "Анализ типов в рантайме",
-        "linesCode": 64
-        }
-    ]
+      "number": 2,
+      "date": "27.07.2025",
+      "title": "Работа с JSON",
+      "keyInsight": "Маршалинг/анмаршалинг данных",
+      "linesCode": 28
+    },
+    {
+      "number": 1,
+      "date": "26.07.2025",
+      "title": "Основы Go",
+      "keyInsight": "Синтаксис, переменные, типы",
+      "linesCode": 42
+    },
+    {
+      "number": 0,
+      "date": "25.07.2025",
+      "title": "Начало пути",
+      "keyInsight": "Отказ от игр, фокус на Go",
+      "linesCode": 15
+    }
+  ]
 }

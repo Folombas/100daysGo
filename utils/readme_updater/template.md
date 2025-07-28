@@ -34,4 +34,3 @@ func main() {
     fmt.Println("┃  Следующий рубеж: Day {{.NextMilestone}}             ┃")
     fmt.Println("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛")
 }
-```

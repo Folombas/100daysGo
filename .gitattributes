@@ -1,0 +1,4 @@
+* text=auto
+*.md text eol=lf charset=utf-8
+*.go text eol=lf charset=utf-8
+*.json text eol=lf charset=utf-8
