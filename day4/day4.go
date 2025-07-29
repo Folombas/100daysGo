@@ -33,4 +33,5 @@ func main() {
 	// Форматируем вывод согласно примеру
 	fmt.Printf("Сегодня %d %s %d г.\n", day, month, year)
 	fmt.Println("This is Day 4 of 100 days of daily Go coding!")
+	fmt.Println("Go learn Go Programming Language")
 }
