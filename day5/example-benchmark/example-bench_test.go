@@ -1,12 +1,12 @@
-package examplebenchmark_test
+package main
 
 import "testing"
 
-func example_bench(b *testing.B) {
-	// Подготовка данных (не учитывается в замерах)
+func BenchmarkStringConcat(b *testing.B) {
+	s1, s2 := "Hello", "World"
+	b.ResetTimer()
 
-	b.ResetTimer() // Сброс таймера
 	for i := 0; i < b.N; i++ {
-		// Тестируемый код
+		_ = s1 + " " + s2 // Тестируем конкатенацию
 	}
 }
