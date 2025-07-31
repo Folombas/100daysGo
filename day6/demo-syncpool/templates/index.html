@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Sync.Pool Демо</title>
+    <link rel="stylesheet" href="/assets/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Демонстрация sync.Pool в Go</h1>
+        <div class="controls">
+            <button onclick="runTest(false)">Тест БЕЗ Pool</button>
+            <button onclick="runTest(true)">Тест С Pool</button>
+        </div>
+
+        <div class="results">
+            <div id="without-pool" class="result-card">
+                <h2>Без Pool</h2>
+                <div class="result-content">Запустите тест...</div>
+            </div>
+            <div id="with-pool" class="result-card">
+                <h2>С Pool</h2>
+                <div class="result-content">Запустите тест...</div>
+            </div>
+        </div>
+
+        <div class="comparison">
+            <h2>Сравнение производительности</h2>
+            <div class="bars">
+                <div class="bar without-pool-bar" style="width: 50%">Без Pool: 0ms</div>
+                <div class="bar with-pool-bar" style="width: 50%">С Pool: 0ms</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info">
+        <h3>Что демонстрирует этот тест?</h3>
+        <p>Sync.Pool позволяет повторно использовать объекты, что дает два основных преимущества:</p>
+        <ul>
+            <li><strong>Сокращение аллокаций:</strong> Меньше созданий/удалений объектов</li>
+            <li><strong>Экономия памяти:</strong> Меньше нагрузка на сборщик мусора</li>
+        </ul>
+        <p>Эти преимущества особенно заметны при высокой нагрузке и частом создании временных объектов.</p>
+    </div>
+
+    <script src="/assets/script.js"></script>
+</body>
+
+</html>
