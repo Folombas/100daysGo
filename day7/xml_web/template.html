@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>XML Library Viewer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .books-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .book-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            transition: transform 0.3s;
+        }
+
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .book-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .book-title {
+            font-size: 1.4em;
+            color: #3498db;
+            margin: 0;
+        }
+
+        .book-id {
+            background: #2c3e50;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .book-detail {
+            margin: 8px 0;
+            display: flex;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            min-width: 80px;
+            color: #7f8c8d;
+        }
+
+        .book-description {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #eee;
+            font-style: italic;
+            color: #555;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Library Books Collection</h1>
+    <div class="books-container">
+        {{range .}}
+        <div class="book-card">
+            <div class="book-header">
+                <h2 class="book-title">{{.Title}}</h2>
+                <span class="book-id">ID: {{.ID}}</span>
+            </div>
+            <div class="book-detail">
+                <span class="detail-label">Author:</span>
+                <span>{{.Author}}</span>
+            </div>
+            <div class="book-detail">
+                <span class="detail-label">Year:</span>
+                <span>{{.Year}}</span>
+            </div>
+            <div class="book-detail">
+                <span class="detail-label">Price:</span>
+                <span>${{printf "%.2f" .Price}}</span>
+            </div>
+            <div class="book-description">
+                {{.Description}}
+            </div>
+        </div>
+        {{end}}
+    </div>
+</body>
+
+</html>
