@@ -7,7 +7,7 @@ import (
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Привет, Golang-программист Гоша!")
-	w.Write([]byte("!!!"))
+	w.Write([]byte("Сегодня 2 августа 2025 года мы с тобою изучаем обслуживание HTTP-запросов на Go!"))
 }
 
 func main() {
