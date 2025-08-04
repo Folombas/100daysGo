@@ -11,7 +11,7 @@ import (
 func searchHandler(w http.ResponseWriter, r *http.Request) {
 	// Получаем query-параметры
 	query := r.URL.Query()
-	
+
 	// Извлекаем параметры
 	q := query.Get("q")
 	category := query.Get("category")
@@ -19,10 +19,10 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	if page == "" {
 		page = "1"
 	}
-	
+
 	// Экранируем пользовательский ввод
 	safeQ := url.QueryEscape(q)
-	
+
 	// Формируем ответ
 	response := map[string]interface{}{
 		"status":   "success",
@@ -36,7 +36,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		},
 		"message": "Поисковый запрос обработан успешно!",
 	}
-	
+
 	// Отправляем JSON
 	json.NewEncoder(w).Encode(response)
 }
@@ -45,16 +45,16 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 func userHandler(w http.ResponseWriter, r *http.Request) {
 	// Извлекаем параметр из пути
 	id := r.PathValue("id")
-	
+
 	// Эмуляция данных пользователя
 	user := map[string]interface{}{
 		"id":       id,
-		"name":     "Иван Петров",
+		"name":     "Гоша Гофер",
 		"email":    fmt.Sprintf("user%s@example.com", id),
 		"role":     "admin",
 		"reg_date": "2025-01-15",
 	}
-	
+
 	// Формируем ответ
 	response := map[string]interface{}{
 		"status": "success",
@@ -64,7 +64,7 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 			"profile": "/user/" + id + "/profile",
 		},
 	}
-	
+
 	json.NewEncoder(w).Encode(response)
 }
 
@@ -76,18 +76,18 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"status":"error","message":"Неверный формат данных"}`, http.StatusBadRequest)
 		return
 	}
-	
+
 	// Получаем данные из формы
 	name := r.FormValue("name")
 	email := r.FormValue("email")
 	password := r.FormValue("password")
-	
+
 	// Простая валидация
 	if name == "" || email == "" || password == "" {
 		http.Error(w, `{"status":"error","message":"Все поля обязательны для заполнения"}`, http.StatusBadRequest)
 		return
 	}
-	
+
 	// Формируем ответ
 	response := map[string]interface{}{
 		"status":  "success",
@@ -98,7 +98,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 			"id":    "1001",
 		},
 	}
-	
+
 	json.NewEncoder(w).Encode(response)
 }
 
@@ -109,23 +109,23 @@ func jsonHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"status":"error","message":"Требуется application/json"}`, http.StatusUnsupportedMediaType)
 		return
 	}
-	
+
 	// Декодируем JSON
 	var requestData struct {
 		Product  string  `json:"product"`
 		Price    float64 `json:"price"`
 		Quantity int     `json:"quantity"`
 	}
-	
+
 	err := json.NewDecoder(r.Body).Decode(&requestData)
 	if err != nil {
 		http.Error(w, `{"status":"error","message":"Неверный формат JSON"}`, http.StatusBadRequest)
 		return
 	}
-	
+
 	// Обработка данных
 	total := requestData.Price * float64(requestData.Quantity)
-	
+
 	// Формируем ответ
 	response := map[string]interface{}{
 		"status":   "success",
@@ -135,6 +135,6 @@ func jsonHandler(w http.ResponseWriter, r *http.Request) {
 		"total":    total,
 		"message":  "Данные успешно обработаны!",
 	}
-	
+
 	json.NewEncoder(w).Encode(response)
 }
