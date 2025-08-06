@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"io"
 	"log"
 	"net/http"
 	"time"
 )
 
-// Структура для декодирования JSON
+// Структуры данных
 type Post struct {
 	ID     int    `json:"id"`
 	Title  string `json:"title"`
@@ -18,96 +19,95 @@ type Post struct {
 	UserID int    `json:"userId"`
 }
 
-func main() {
-	// Создаем HTTP-клиент с таймаутом
-	client := &http.Client{
-		Timeout: 10 * time.Second,
-	}
-
-	// 1. GET-запрос к публичному API
-	fmt.Println("▶️ GET-запрос к JSONPlaceholder")
-	getExample(client)
-
-	// 2. POST-запрос с созданием нового поста
-	fmt.Println("\n▶️ POST-запрос с созданием ресурса")
-	postExample(client)
+type PageData struct {
+	GetResult  string
+	PostResult string
 }
 
-func getExample(client *http.Client) {
-	// Отправляем GET-запрос
+func main() {
+	// Статические файлы
+	fs := http.FileServer(http.Dir("./static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
+
+	// Обработчики
+	http.HandleFunc("/", indexHandler)
+	http.HandleFunc("/get", getHandler)
+	http.HandleFunc("/post", postHandler)
+
+	log.Println("Сервер запущен на http://localhost:8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	tmpl := template.Must(template.ParseFiles("templates/index.html"))
+	tmpl.Execute(w, nil)
+}
+
+func getHandler(w http.ResponseWriter, r *http.Request) {
+	client := &http.Client{Timeout: 10 * time.Second}
+	
 	resp, err := client.Get("https://jsonplaceholder.typicode.com/posts/1")
 	if err != nil {
-		log.Fatalf("Ошибка GET-запроса: %v", err)
+		http.Error(w, "Ошибка GET-запроса: "+err.Error(), http.StatusInternalServerError)
+		return
 	}
 	defer resp.Body.Close()
 
-	// Проверяем статус
-	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("Неверный статус: %s", resp.Status)
-	}
-
-	// Читаем тело ответа
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalf("Ошибка чтения ответа: %v", err)
-	}
-
-	// Декодируем JSON
+	body, _ := io.ReadAll(resp.Body)
 	var post Post
-	if err := json.Unmarshal(body, &post); err != nil {
-		log.Fatalf("Ошибка декодирования JSON: %v", err)
-	}
+	json.Unmarshal(body, &post)
 
-	// Выводим результат
-	fmt.Printf("📨 Получен пост #%d:\n", post.ID)
-	fmt.Printf("Заголовок: %s\n", post.Title)
-	fmt.Printf("Текст: %s\n", post.Body)
+	// Форматируем результат
+	result := fmt.Sprintf(`
+		<div class="result-card success">
+			<h3>📨 Получен пост #%d</h3>
+			<p><strong>Заголовок:</strong> %s</p>
+			<p><strong>Текст:</strong> %s</p>
+			<p><strong>UserID:</strong> %d</p>
+			<p><strong>Статус:</strong> %s</p>
+		</div>
+	`, post.ID, post.Title, post.Body, post.UserID, resp.Status)
+
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(result))
 }
 
-func postExample(client *http.Client) {
-	// Создаем данные для отправки
+func postHandler(w http.ResponseWriter, r *http.Request) {
+	client := &http.Client{Timeout: 10 * time.Second}
+	
 	newPost := Post{
-		Title:  "Мой пост",
-		Body:   "Создано в Day12 марафона Go!",
+		Title:  "Мой пост из Day12",
+		Body:   "Создано в рамках марафона '100 дней программирования на Go'!",
 		UserID: 1,
 	}
 
-	// Кодируем в JSON
-	jsonData, err := json.Marshal(newPost)
-	if err != nil {
-		log.Fatalf("Ошибка кодирования JSON: %v", err)
-	}
-
-	// Отправляем POST-запрос
+	jsonData, _ := json.Marshal(newPost)
 	resp, err := client.Post(
 		"https://jsonplaceholder.typicode.com/posts",
 		"application/json",
 		bytes.NewBuffer(jsonData),
 	)
 	if err != nil {
-		log.Fatalf("Ошибка POST-запроса: %v", err)
+		http.Error(w, "Ошибка POST-запроса: "+err.Error(), http.StatusInternalServerError)
+		return
 	}
 	defer resp.Body.Close()
 
-	// Проверяем статус
-	if resp.StatusCode != http.StatusCreated {
-		log.Fatalf("Неверный статус: %s", resp.Status)
-	}
-
-	// Читаем ответ
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalf("Ошибка чтения ответа: %v", err)
-	}
-
-	// Декодируем ответ
+	body, _ := io.ReadAll(resp.Body)
 	var createdPost Post
-	if err := json.Unmarshal(body, &createdPost); err != nil {
-		log.Fatalf("Ошибка декодирования JSON: %v", err)
-	}
+	json.Unmarshal(body, &createdPost)
 
-	// Выводим результат
-	fmt.Printf("✅ Создан новый пост!\n")
-	fmt.Printf("ID: %d\n", createdPost.ID)
-	fmt.Printf("Статус: %s\n", resp.Status)
+	// Форматируем результат
+	result := fmt.Sprintf(`
+		<div class="result-card success">
+			<h3>✅ Успешно создан новый пост!</h3>
+			<p><strong>ID:</strong> %d</p>
+			<p><strong>Заголовок:</strong> %s</p>
+			<p><strong>Текст:</strong> %s</p>
+			<p><strong>Статус:</strong> %s</p>
+		</div>
+	`, createdPost.ID, createdPost.Title, createdPost.Body, resp.Status)
+
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(result))
 }
