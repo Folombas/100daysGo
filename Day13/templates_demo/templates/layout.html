@@ -1,0 +1,44 @@
+{{ define "layout.html" }}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Шаблон из файла</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: #f0f0f0;
+            padding: 20px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Мой блог на Go</h1>
+        </header>
+
+        <main>
+            {{ template "user" . }} <!-- Вставляем дочерний шаблон -->
+        </main>
+
+        <footer>
+            <p>Сгенерировано: {{ now.Format "2006-01-02" }}</p>
+        </footer>
+    </div>
+</body>
+
+</html>
+{{ end }}
