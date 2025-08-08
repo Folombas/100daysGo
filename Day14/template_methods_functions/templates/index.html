@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{.Title}}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+        }
+
+        .info {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .highlight {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>{{.Title}}</h1>
+
+    <div class="info">
+        <h2>Данные пользователя:</h2>
+        <p><strong>Имя:</strong> {{.User.FirstName}}</p>
+        <p><strong>Фамилия:</strong> {{.User.LastName}}</p>
+        <p><strong>Полное имя (метод):</strong> <span class="highlight">{{.User.FullName}}</span></p>
+
+        <h2>Работа с датами:</h2>
+        <p><strong>Дата рождения:</strong> {{.User.Birthday.Format "02.01.2006"}}</p>
+        <p><strong>Возраст (метод):</strong> <span class="highlight">{{.User.Age}}</span> лет</p>
+        <p><strong>День рождения:</strong> {{.User.Birthday.Day}} {{rusMonth .User.Birthday}} {{.User.Birthday.Year}}
+            года</p>
+
+        <h2>Работа с функциями:</h2>
+        <p><strong>Заглавные буквы (функция upper):</strong> {{upper "Привет, мир!"}}</p>
+        <p><strong>Форматированная фраза:</strong>
+            {{printf "%s - вам %d лет!" .User.FullName .User.Age}}
+        </p>
+    </div>
+</body>
+
+</html>
