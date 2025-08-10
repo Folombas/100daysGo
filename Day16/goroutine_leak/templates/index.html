@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .info-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .info-item {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            min-width: 250px;
+            transition: transform 0.3s;
+        }
+
+        .info-item:hover {
+            transform: translateY(-5px);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .info-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .danger {
+            color: #ff6b6b;
+            animation: pulse 1.5s infinite;
+        }
+
+        .success {
+            color: #4dccbd;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .btn-leak {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            color: white;
+        }
+
+        .btn-stop {
+            background: linear-gradient(to right, #11998e, #38ef7d);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+
+        code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>{{.Title}}</h1>
+            <p>Демонстрация обнаружения утечек горутин с помощью pprof</p>
+        </header>
+
+        <div class="info-bar">
+            <div class="info-item">
+                <div>Версия Go</div>
+                <div class="info-value success">{{.GoVersion}}</div>
+            </div>
+            <div class="info-item">
+                <div>Всего горутин</div>
+                <div class="info-value danger">{{.NumGoroutine}}</div>
+            </div>
+            <div class="info-item">
+                <div>Утекших горутин</div>
+                <div class="info-value danger">{{.LeakCount}}</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-leak" onclick="startLeak()">Запустить утечку</button>
+            <button class="btn btn-stop" onclick="stopLeak()">Остановить утечку</button>
+        </div>
+
+        <div class="instructions">
+            <h2>Как обнаружить утечку горутин:</h2>
+            <ol>
+                <li>Нажмите "Запустить утечку"</li>
+                <li>Наблюдайте рост числа горутин</li>
+                <li>Соберите профиль горутин:
+                    <pre><code>go tool pprof http://localhost:8080/debug/pprof/goroutine</code></pre>
+                </li>
+                <li>В интерактивном режиме pprof:
+                    <pre><code>(pprof) top
+(pprof) list leakingGoroutine
+(pprof) web</code></pre>
+                </li>
+                <li>Нажмите "Остановить утечку" для очистки</li>
+            </ol>
+        </div>
+
+        <div class="info-bar">
+            <div class="info-item">
+                <h3>Почему это важно?</h3>
+                <p>Утечки горутин приводят к:</p>
+                <ul>
+                    <li>Росту потребления памяти</li>
+                    <li>Снижению производительности</li>
+                    <li>Аварийному завершению программ</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Day 16 | 100 дней Go | Профилирование веба</p>
+        </div>
+    </div>
+
+    <script>
+        function startLeak() {
+            fetch('/start-leak')
+                .then(response => response.text())
+                .then(data => alert(data))
+                .catch(err => alert('Ошибка: ' + err));
+        }
+
+        function stopLeak() {
+            fetch('/stop-leak')
+                .then(response => response.text())
+                .then(data => alert(data))
+                .catch(err => alert('Ошибка: ' + err));
+        }
+
+        // Автообновление страницы каждые 5 секунд
+        setInterval(() => {
+            window.location.reload();
+        }, 5000);
+    </script>
+</body>
+
+</html>
