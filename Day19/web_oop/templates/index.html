@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ООП в Go: Животные</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Особенности ООП в Go</h1>
+        <div class="card">
+            <h2>Демонстрация структур и интерфейсов</h2>
+
+            <div class="input-group">
+                <input type="text" id="animalInput" placeholder="Введите животное (кошка, собака...)">
+                <button onclick="getSound()">Узнать звук</button>
+            </div>
+
+            <div id="result" class="result"></div>
+
+            <div class="oop-info">
+                <h3>Отличия от классического ООП (Java/C++):</h3>
+                <ul>
+                    <li>Нет классов - только структуры</li>
+                    <li>Композиция вместо наследования</li>
+                    <li>Интерфейсы реализуются неявно</li>
+                    <li>Методы объявляются вне структур</li>
+                    <li>Отсутствие конструкторов (используются фабричные функции)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function getSound() {
+            const input = document.getElementById('animalInput').value.trim().toLowerCase();
+            if (!input) return;
+
+            fetch(`/animal?species=${encodeURIComponent(input)}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('result').innerHTML = `
+                        <div class="animal-result">
+                            <h3>${data.species}</h3>
+                            <p class="sound">${data.sound}</p>
+                        </div>
+                    `;
+                })
+                .catch(error => {
+                    document.getElementById('result').innerHTML = `
+                        <p class="error">Ошибка: ${error.message}</p>
+                    `;
+                });
+        }
+
+        // Обработка нажатия Enter
+        document.getElementById('animalInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') getSound();
+        });
+    </script>
+</body>
+
+</html>
