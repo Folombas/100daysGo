@@ -17,6 +17,7 @@ func main() {
 	http.HandleFunc("/read", readHandler)
 	http.HandleFunc("/delete", deleteHandler)
 	http.HandleFunc("/list", listHandler)
+	http.HandleFunc("/fileinfo", fileInfoHandler)
 
 	fmt.Println("Сервер запущен: http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))

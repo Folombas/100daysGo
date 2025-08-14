@@ -2,9 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"os"
 	"path/filepath"
+
 	//"strings"
+	"fmt"
 )
 
 // Информация о файле
@@ -12,12 +15,6 @@ type FileInfo struct {
 	Name  string `json:"name"`
 	Size  int64  `json:"size"`
 	IsDir bool   `json:"isDir"`
-}
-
-// Чтение файла
-func readFile(path string) (string, error) {
-	data, err := os.ReadFile(path)
-	return string(data), err
 }
 
 // Запись в файл
@@ -58,4 +55,43 @@ func listDir(path string) ([]byte, error) {
 func absPath(path string) string {
 	abs, _ := filepath.Abs(path)
 	return abs
+}
+
+// Чтение файла с ограничением размера
+func readFile(path string) (string, error) {
+	// Ограничиваем размер читаемых файлов (2 МБ)
+	const maxSize = 2 << 20 // 2 MB
+
+	file, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	// Проверяем размер файла
+	info, err := file.Stat()
+	if err != nil {
+		return "", err
+	}
+
+	if info.Size() > maxSize {
+		return fmt.Sprintf("Файл слишком большой (%s)", formatSize(info.Size())), nil
+	}
+
+	data, err := ioutil.ReadAll(file)
+	return string(data), err
+}
+
+// Форматирование размера
+func formatSize(bytes int64) string {
+	const unit = 1024
+	if bytes < unit {
+		return fmt.Sprintf("%d Б", bytes)
+	}
+	div, exp := int64(unit), 0
+	for n := bytes / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %cБ", float64(bytes)/float64(div), "КМГТПЕ"[exp])
 }

@@ -5,6 +5,35 @@
     <meta charset="UTF-8">
     <title>Файловый менеджер на Go</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        /* Добавляем новые стили */
+        .file-item {
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 2px 0;
+        }
+
+        .file-item:hover {
+            background-color: #e3f2fd;
+        }
+
+        .file-item.selected {
+            background-color: #bbdefb;
+            font-weight: bold;
+        }
+
+        .file-content {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            min-height: 150px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+    </style>
 </head>
 
 <body>
@@ -30,60 +59,91 @@
             <h2>Файловая система</h2>
             <div class="file-actions">
                 <button onclick="loadFileList()">Обновить список</button>
-                <input type="text" id="filePath" placeholder="Путь к файлу">
-                <button onclick="readFile()">Прочитать</button>
-                <button onclick="deleteFile()">Удалить</button>
+                <button onclick="deleteSelected()" class="danger">Удалить выбранное</button>
             </div>
 
             <!-- Список файлов -->
-            <div id="fileList" class="file-list"></div>
+            <div id="fileList" class="file-list">
+                <p>Загрузка списка файлов...</p>
+            </div>
 
             <!-- Содержимое файла -->
-            <div class="file-content">
-                <h3>Содержимое файла:</h3>
-                <pre id="fileContent"></pre>
+            <div class="file-content" id="fileContent">
+                Выберите файл для просмотра содержимого
             </div>
         </div>
     </div>
 
     <script>
+        let currentPath = '';
+
         // Загрузка списка файлов
         function loadFileList() {
             fetch('/list')
                 .then(response => response.json())
                 .then(files => {
-                    let html = '<ul>';
+                    let html = '<div class="file-header">';
+                    html += '<div>Имя</div><div>Размер</div><div>Тип</div>';
+                    html += '</div>';
+
                     files.forEach(file => {
                         const icon = file.isDir ? '📁' : '📄';
-                        html += `<li>${icon} ${file.name} (${formatSize(file.size)})</li>`;
+                        const size = file.isDir ? '-' : formatSize(file.size);
+                        const type = file.isDir ? 'Папка' : 'Файл';
+
+                        html += `
+                            <div class="file-item" 
+                                 data-path="${file.name}" 
+                                 data-isdir="${file.isDir}"
+                                 onclick="selectFile(this, '${file.name}', ${file.isDir})">
+                                <div>${icon} ${file.name}</div>
+                                <div>${size}</div>
+                                <div>${type}</div>
+                            </div>
+                        `;
                     });
-                    html += '</ul>';
+
                     document.getElementById('fileList').innerHTML = html;
                 });
         }
 
-        // Чтение файла
-        function readFile() {
-            const path = document.getElementById('filePath').value;
-            if (!path) return;
+        // Выбор файла
+        function selectFile(element, path, isDir) {
+            // Снимаем выделение со всех элементов
+            document.querySelectorAll('.file-item').forEach(el => {
+                el.classList.remove('selected');
+            });
 
-            fetch(`/read?path=${encodeURIComponent(path)}`)
-                .then(response => response.text())
-                .then(content => {
-                    document.getElementById('fileContent').textContent = content;
+            // Выделяем текущий
+            element.classList.add('selected');
+            currentPath = path;
+
+            // Для папок ничего не показываем
+            if (isDir) {
+                document.getElementById('fileContent').textContent = 'Выбрана папка';
+                return;
+            }
+
+            // Загружаем содержимое файла
+            fetch(`/fileinfo?path=${encodeURIComponent(path)}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('fileContent').textContent = data.content || 'Файл пуст';
+                })
+                .catch(error => {
+                    document.getElementById('fileContent').textContent = 'Ошибка загрузки: ' + error.message;
                 });
         }
 
-        // Удаление файла
-        function deleteFile() {
-            const path = document.getElementById('filePath').value;
-            if (!path || !confirm(`Удалить ${path}?`)) return;
+        // Удаление выбранного файла/папки
+        function deleteSelected() {
+            if (!currentPath || !confirm(`Удалить "${currentPath}"?`)) return;
 
-            fetch(`/delete?path=${encodeURIComponent(path)}`, { method: 'POST' })
+            fetch(`/delete?path=${encodeURIComponent(currentPath)}`, { method: 'POST' })
                 .then(() => {
+                    currentPath = '';
                     loadFileList();
-                    document.getElementById('fileContent').textContent = '';
-                    document.getElementById('filePath').value = '';
+                    document.getElementById('fileContent').textContent = 'Объект удалён';
                 });
         }
 

@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"html/template"
 	//"path/filepath"
+	"encoding/json"
+	"os"
 )
 
 // Главная страница
@@ -47,4 +49,36 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 	files, _ := listDir(".")
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(files)
+}
+
+// Получение информации о файле
+func fileInfoHandler(w http.ResponseWriter, r *http.Request) {
+    path := r.URL.Query().Get("path")
+    if path == "" {
+        http.Error(w, "Не указан путь", http.StatusBadRequest)
+        return
+    }
+
+    info, err := os.Stat(path)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusNotFound)
+        return
+    }
+
+    response := map[string]interface{}{
+        "name":    info.Name(),
+        "size":    info.Size(),
+        "isDir":   info.IsDir(),
+        "modTime": info.ModTime(),
+    }
+
+    if !info.IsDir() {
+        content, err := readFile(path)
+        if err == nil {
+            response["content"] = content
+        }
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(response)
 }
