@@ -31,7 +31,7 @@ func loadFromJSON(filename string, target interface{}) error {
 
 // Демо: работа с JSON
 func runJSONDemo() {
-    user := User{"Иван Петров", "ivan@example.com", 30}
+    user := User{"Гоша Гофер", "gosha@gofer.com", 30}
     saveToJSON("user.json", user)
     
     var newUser User
