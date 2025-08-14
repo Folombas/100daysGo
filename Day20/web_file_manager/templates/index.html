@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Файловый менеджер на Go</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>🖥️ Файловый менеджер</h1>
+
+        <!-- Создание файла/папки -->
+        <div class="card">
+            <h2>Создать новый объект</h2>
+            <form action="/create" method="POST">
+                <input type="text" name="name" placeholder="Имя файла/папки" required>
+                <div class="checkbox">
+                    <input type="checkbox" id="isDir" name="isDir">
+                    <label for="isDir">Это папка</label>
+                </div>
+                <textarea name="content" placeholder="Содержимое файла"></textarea>
+                <button type="submit">Создать</button>
+            </form>
+        </div>
+
+        <!-- Работа с файлами -->
+        <div class="card">
+            <h2>Файловая система</h2>
+            <div class="file-actions">
+                <button onclick="loadFileList()">Обновить список</button>
+                <input type="text" id="filePath" placeholder="Путь к файлу">
+                <button onclick="readFile()">Прочитать</button>
+                <button onclick="deleteFile()">Удалить</button>
+            </div>
+
+            <!-- Список файлов -->
+            <div id="fileList" class="file-list"></div>
+
+            <!-- Содержимое файла -->
+            <div class="file-content">
+                <h3>Содержимое файла:</h3>
+                <pre id="fileContent"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Загрузка списка файлов
+        function loadFileList() {
+            fetch('/list')
+                .then(response => response.json())
+                .then(files => {
+                    let html = '<ul>';
+                    files.forEach(file => {
+                        const icon = file.isDir ? '📁' : '📄';
+                        html += `<li>${icon} ${file.name} (${formatSize(file.size)})</li>`;
+                    });
+                    html += '</ul>';
+                    document.getElementById('fileList').innerHTML = html;
+                });
+        }
+
+        // Чтение файла
+        function readFile() {
+            const path = document.getElementById('filePath').value;
+            if (!path) return;
+
+            fetch(`/read?path=${encodeURIComponent(path)}`)
+                .then(response => response.text())
+                .then(content => {
+                    document.getElementById('fileContent').textContent = content;
+                });
+        }
+
+        // Удаление файла
+        function deleteFile() {
+            const path = document.getElementById('filePath').value;
+            if (!path || !confirm(`Удалить ${path}?`)) return;
+
+            fetch(`/delete?path=${encodeURIComponent(path)}`, { method: 'POST' })
+                .then(() => {
+                    loadFileList();
+                    document.getElementById('fileContent').textContent = '';
+                    document.getElementById('filePath').value = '';
+                });
+        }
+
+        // Форматирование размера
+        function formatSize(bytes) {
+            if (bytes === 0) return '0 Б';
+            const sizes = ['Б', 'КБ', 'МБ', 'ГБ'];
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
+        }
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', loadFileList);
+    </script>
+</body>
+
+</html>
