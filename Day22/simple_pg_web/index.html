@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Простой CRUD</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Управление пользователями</h1>
+
+        <!-- Форма добавления -->
+        <form action="/add" method="POST" class="card">
+            <h2>Добавить пользователя</h2>
+            <input type="text" name="name" placeholder="Имя" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <button>Добавить</button>
+        </form>
+
+        <!-- Список пользователей -->
+        <div class="card">
+            <h2>Список пользователей</h2>
+            {{range .}}
+            <div class="user">
+                <div>
+                    <strong>{{.Name}}</strong>
+                    <div>{{.Email}}</div>
+                </div>
+                <form action="/delete" method="POST">
+                    <input type="hidden" name="id" value="{{.ID}}">
+                    <button class="delete">Удалить</button>
+                </form>
+            </div>
+            {{end}}
+        </div>
+    </div>
+</body>
+
+</html>
