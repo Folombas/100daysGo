@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>REST API Сервер</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #f9f9f9;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        textarea {
+            height: 100px;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .articles {
+            margin-top: 30px;
+        }
+
+        .article {
+            border: 1px solid #eee;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            background: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h1>Добавить новую статью</h1>
+        <form action="/add" method="POST">
+            <div class="form-group">
+                <label for="id">ID:</label>
+                <input type="text" id="id" name="id" required>
+            </div>
+
+            <div class="form-group">
+                <label for="title">Заголовок:</label>
+                <input type="text" id="title" name="title" required>
+            </div>
+
+            <div class="form-group">
+                <label for="content">Содержание:</label>
+                <textarea id="content" name="content" required></textarea>
+            </div>
+
+            <button type="submit">Добавить статью</button>
+        </form>
+    </div>
+
+    <div class="card articles">
+        <h2>Все статьи</h2>
+        <div id="articleList">
+            <!-- Сюда вставим статьи через JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        // Загружаем и отображаем статьи
+        async function loadArticles() {
+            const response = await fetch('/articles');
+            const articles = await response.json();
+
+            let html = '';
+            articles.forEach(article => {
+                html += `
+                <div class="article">
+                    <h3>${article.title} (ID: ${article.id})</h3>
+                    <p>${article.content}</p>
+                </div>
+                `;
+            });
+
+            document.getElementById('articleList').innerHTML = html || '<p>Статей пока нет</p>';
+        }
+
+        // Загружаем статьи при открытии страницы
+        document.addEventListener('DOMContentLoaded', loadArticles);
+
+        // Обновляем список после добавления
+        document.querySelector('form').addEventListener('submit', function () {
+            setTimeout(loadArticles, 300);
+        });
+    </script>
+</body>
+
+</html>
