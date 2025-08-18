@@ -6,7 +6,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	
+
 	"github.com/gorilla/mux"
 )
 
@@ -32,15 +32,15 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 // Обработчик формы добавления
 func FormHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	
+
 	article := Article{
 		ID:      r.FormValue("id"),
 		Title:   r.FormValue("title"),
 		Content: r.FormValue("content"),
 	}
-	
+
 	articles = append(articles, article)
-	
+
 	// Перенаправляем обратно на главную
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
@@ -54,11 +54,11 @@ func GetArticles(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	router := mux.NewRouter()
-	
+
 	router.HandleFunc("/", HomeHandler).Methods("GET")
 	router.HandleFunc("/add", FormHandler).Methods("POST")
 	router.HandleFunc("/articles", GetArticles).Methods("GET")
-	
+
 	fmt.Println("Сервер запущен: http://localhost:8000")
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
