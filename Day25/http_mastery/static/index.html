@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>HTTP Мастерская</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .endpoint {
+            background: #f5f5f5;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        pre {
+            background: #eee;
+            padding: 10px;
+            overflow: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>HTTP Мастерская на Go</h1>
+
+    <div class="endpoint">
+        <h3>GET /api/hello</h3>
+        <button onclick="testEndpoint('/api/hello')">Тестировать</button>
+        <pre id="result-hello"></pre>
+    </div>
+
+    <div class="endpoint">
+        <h3>GET /api/time</h3>
+        <button onclick="testEndpoint('/api/time')">Тестировать</button>
+        <pre id="result-time"></pre>
+    </div>
+
+    <div class="endpoint">
+        <h3>POST /api/echo</h3>
+        <button onclick="testEcho()">Тестировать</button>
+        <pre id="result-echo"></pre>
+    </div>
+
+    <div class="endpoint">
+        <h3>GET /api/external</h3>
+        <button onclick="testEndpoint('/api/external')">Тестировать</button>
+        <pre id="result-external"></pre>
+    </div>
+
+    <script>
+        async function testEndpoint(endpoint) {
+            try {
+                const response = await fetch(endpoint);
+                const data = await response.json();
+                document.getElementById(`result-${endpoint.split('/').pop()}`).textContent =
+                    JSON.stringify(data, null, 2);
+            } catch (error) {
+                console.error('Ошибка:', error);
+            }
+        }
+
+        async function testEcho() {
+            try {
+                const response = await fetch('/api/echo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: 'Тестовое сообщение', number: 42 })
+                });
+                const data = await response.json();
+                document.getElementById('result-echo').textContent =
+                    JSON.stringify(data, null, 2);
+            } catch (error) {
+                console.error('Ошибка:', error);
+            }
+        }
+    </script>
+</body>
+
+</html>
