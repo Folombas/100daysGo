@@ -1,22 +1,22 @@
 package handlers
 
 import (
-	"fmt"
-	"net/http"
-	"strconv"
+    "fmt"
+    "net/http"
+    "strconv"
 
-	"error_handling/utils"
+    "error_handling/utils"  
 )
 
-// StartWebServer запускает веб-сервер с обработкой ошибок
 func StartWebServer() error {
-	http.HandleFunc("/", homeHandler)
-	http.HandleFunc("/divide", divideHandler)
-	http.HandleFunc("/user", userHandler)
-	http.HandleFunc("/panic", panicHandler)
+    // Регистрируем обработчики
+    http.HandleFunc("/", homeHandler)
+    http.HandleFunc("/divide", divideHandler)
+    http.HandleFunc("/user", userHandler)
+    http.HandleFunc("/panic", panicHandler)
 
-	fmt.Println("Веб-сервер запущен на http://localhost:8080")
-	return http.ListenAndServe(":8080", nil)
+    fmt.Println("Веб-сервер запущен на http://localhost:8080")
+    return http.ListenAndServe(":8080", nil)
 }
 
 // homeHandler обрабатывает главную страницу
