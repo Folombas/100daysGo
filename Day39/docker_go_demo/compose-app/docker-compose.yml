@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  go-app:
+    build:
+      context: ..
+      dockerfile: multi-stage/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  go-app-dev:
+    build:
+      context: ..
+      dockerfile: single-stage/Dockerfile
+    ports:
+      - "8081:8080"
+    environment:
+      - PORT=8080
+    volumes:
+      - ../:/app
+    command: ["go", "run", "main.go", "server"]
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  redis_data:
