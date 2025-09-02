@@ -1,18 +1,15 @@
+//go:build windows
+
 package main
 
 import (
 	"fmt"
 	"golang.org/x/sys/windows/registry"
-	"runtime"
 	"strings"
 )
 
 // getWindowsDetails возвращает детальную информацию о версии Windows
 func getWindowsDetails() string {
-	if runtime.GOOS != "windows" {
-		return "Windows"
-	}
-
 	// Получаем информацию из реестра
 	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion`, registry.QUERY_VALUE)
 	if err != nil {

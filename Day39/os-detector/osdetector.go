@@ -31,71 +31,120 @@ func getOSInfo() string {
 	}
 }
 
-// getWindowsVersion возвращает точную версию Windows
+// getWindowsVersion возвращает версию Windows
 func getWindowsVersion() string {
 	// Для Windows используем более точное определение версии
-	version := runtime.GOOS
-	if os := runtime.GOOS; os == "windows" {
-		// Получаем более детальную информацию о версии Windows
-		version = getWindowsDetails()
+	if runtime.GOOS == "windows" {
+		return getWindowsDetails()
 	}
-	return version
+	return "Windows"
 }
 
-// getLinuxDistroWithIcon возвращает информацию о дистрибутиве Linux с иконкой
 func getLinuxDistroWithIcon() string {
 	distro := getLinuxDistro()
-	
+
 	// Добавляем иконки для популярных дистрибутивов
-	if strings.Contains(strings.ToLower(distro), "ubuntu") {
-		return "🐧 " + distro
-	} else if strings.Contains(strings.ToLower(distro), "debian") {
+	distroLower := strings.ToLower(distro)
+	switch {
+	case strings.Contains(distroLower, "ubuntu"):
+		// Определяем версию Ubuntu
+		if strings.Contains(distroLower, "24.04") || strings.Contains(distroLower, "noble") {
+			return "🦁 " + distro + " (Noble Numbat)"
+		} else if strings.Contains(distroLower, "22.04") || strings.Contains(distroLower, "jammy") {
+			return "🦁 " + distro + " (Jammy Jellyfish)"
+		}
+		return "🦁 " + distro
+	case strings.Contains(distroLower, "debian"):
 		return "🌀 " + distro
-	} else if strings.Contains(strings.ToLower(distro), "centos") {
+	case strings.Contains(distroLower, "centos"):
 		return "🔴 " + distro
-	} else if strings.Contains(strings.ToLower(distro), "fedora") {
+	case strings.Contains(distroLower, "fedora"):
 		return "🔵 " + distro
-	} else if strings.Contains(strings.ToLower(distro), "arch") {
+	case strings.Contains(distroLower, "arch"):
 		return "💠 " + distro
-	} else if strings.Contains(strings.ToLower(distro), "mint") {
+	case strings.Contains(distroLower, "mint"):
 		return "🍃 " + distro
-	} else if strings.Contains(strings.ToLower(distro), "kali") {
+	case strings.Contains(distroLower, "kali"):
 		return "🐉 " + distro
+	case strings.Contains(distroLower, "alpine"):
+		return "🏔️ " + distro
+	case strings.Contains(distroLower, "opensuse"):
+		return "🦎 " + distro
 	}
-	
+
 	return "🐧 " + distro // Иконка пингвина по умолчанию для Linux
 }
 
 // getLinuxDistro возвращает информацию о дистрибутиве Linux
 func getLinuxDistro() string {
-	// Пытаемся прочитать информацию о дистрибутиве
-	content, err := ioutil.ReadFile("/etc/os-release")
-	if err != nil {
-		return "Linux (неизвестный дистрибутив)"
+	// Пробуем разные файлы с информацией о дистрибутиве
+	files := []string{
+		"/etc/os-release",
+		"/usr/lib/os-release",
+		"/etc/lsb-release",
+		"/etc/redhat-release",
+		"/etc/debian_version",
 	}
 
-	// Парсим содержимое файла
-	lines := strings.Split(string(content), "\n")
-	var name, version string
+	for _, file := range files {
+		content, err := ioutil.ReadFile(file)
+		if err != nil {
+			continue
+		}
 
-	for _, line := range lines {
-		if strings.HasPrefix(line, "NAME=") {
-			name = strings.Trim(strings.TrimPrefix(line, "NAME="), "\"")
+		// Анализируем содержимое файла
+		lines := strings.Split(string(content), "\n")
+		var name, version, prettyName, versionCodename string
+
+		for _, line := range lines {
+			if strings.HasPrefix(line, "NAME=") {
+				name = strings.Trim(strings.TrimPrefix(line, "NAME="), "\"")
+			}
+			if strings.HasPrefix(line, "VERSION_ID=") {
+				version = strings.Trim(strings.TrimPrefix(line, "VERSION_ID="), "\"")
+			}
+			if strings.HasPrefix(line, "PRETTY_NAME=") {
+				prettyName = strings.Trim(strings.TrimPrefix(line, "PRETTY_NAME="), "\"")
+			}
+			if strings.HasPrefix(line, "VERSION_CODENAME=") {
+				versionCodename = strings.Trim(strings.TrimPrefix(line, "VERSION_CODENAME="), "\"")
+			}
+			if strings.HasPrefix(line, "DISTRIB_DESCRIPTION=") {
+				prettyName = strings.Trim(strings.TrimPrefix(line, "DISTRIB_DESCRIPTION="), "\"")
+			}
 		}
-		if strings.HasPrefix(line, "VERSION_ID=") {
-			version = strings.Trim(strings.TrimPrefix(line, "VERSION_ID="), "\"")
-		}
-		if strings.HasPrefix(line, "PRETTY_NAME=") {
-			// Если есть PRETTY_NAME, используем его
-			prettyName := strings.Trim(strings.TrimPrefix(line, "PRETTY_NAME="), "\"")
+
+		// Если нашли PRETTY_NAME, используем его
+		if prettyName != "" {
+			// Добавляем кодовое имя для Ubuntu
+			if versionCodename != "" && strings.Contains(strings.ToLower(prettyName), "ubuntu") {
+				return fmt.Sprintf("%s (%s)", prettyName, strings.Title(versionCodename))
+			}
 			return prettyName
 		}
-	}
 
-	if name != "" && version != "" {
-		return fmt.Sprintf("%s %s", name, version)
-	} else if name != "" {
-		return fmt.Sprintf("%s", name)
+		// Формируем имя из компонентов
+		if name != "" {
+			if version != "" {
+				return fmt.Sprintf("%s %s", name, version)
+			}
+			return name
+		}
+
+		// Пытаемся определить дистрибутив по содержимому файла
+		contentStr := string(content)
+		switch {
+		case strings.Contains(contentStr, "Ubuntu"):
+			return "Ubuntu"
+		case strings.Contains(contentStr, "Debian"):
+			return "Debian"
+		case strings.Contains(contentStr, "CentOS"):
+			return "CentOS"
+		case strings.Contains(contentStr, "Fedora"):
+			return "Fedora"
+		case strings.Contains(contentStr, "Arch"):
+			return "Arch Linux"
+		}
 	}
 
 	return "Linux (неизвестный дистрибутив)"
