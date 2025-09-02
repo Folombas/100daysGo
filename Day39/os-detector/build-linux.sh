@@ -1,34 +1,27 @@
 #!/bin/bash
 
-# Скрипт сборки OS Detector для Linux
-# Разместите этот файл в корне проекта и сделайте исполняемым: chmod +x build-linux.sh
-
-set -e  # Прерывать выполнение при ошибках
-
-echo "🐧 Сборка OS Detector для Linux..."
+echo "🐧 Сборка OS Detector для Linux (Ubuntu 24.04, Debian 12, Kali Linux)..."
 echo "📂 Текущая директория: $(pwd)"
 echo "🔄 Версия Go: $(go version)"
 
-# Создаем папку для бинарников, если её нет
+# Создаем папку для бинарников
 mkdir -p bin
 
 # Очистка предыдущих сборок
 echo "🧹 Очистка предыдущих сборок..."
-rm -f os-detector os-detector-* bin/os-detector-*
+rm -f bin/os-detector-*
 
-# Сборка для текущей архитектуры
-echo "🔨 Сборка для $(uname -m)..."
-go build -o bin/os-detector
+# Сборка для Ubuntu 24.04 (amd64)
+echo "🔨 Сборка для Ubuntu 24.04 (amd64)..."
+GOOS=linux GOARCH=amd64 go build -o bin/os-detector-ubuntu-24.04
 
-# Сборка для других архитектур Linux
-echo "🔨 Сборка для AMD64..."
-GOOS=linux GOARCH=amd64 go build -o bin/os-detector-amd64
+# Сборка для Debian 12 (amd64)
+echo "🔨 Сборка для Debian 12 (amd64)..."
+GOOS=linux GOARCH=amd64 go build -o bin/os-detector-debian-12
 
-echo "🔨 Сборка для ARM64..."
-GOOS=linux GOARCH=arm64 go build -o bin/os-detector-arm64
-
-echo "🔨 Сборка для 386..."
-GOOS=linux GOARCH=386 go build -o bin/os-detector-386
+# Сборка для Kali Linux (amd64)
+echo "🔨 Сборка для Kali Linux (amd64)..."
+GOOS=linux GOARCH=amd64 go build -o bin/os-detector-kali-linux
 
 # Делаем файлы исполняемыми
 chmod +x bin/os-detector*
@@ -38,5 +31,7 @@ echo "📦 Собранные файлы:"
 ls -la bin/os-detector*
 
 echo ""
-echo "🚀 Для запуска выполните:"
-echo "   ./bin/os-detector"
+echo "🚀 Для запуска выберите соответствующий бинарник:"
+echo "   Для Ubuntu 24.04:   ./bin/os-detector-ubuntu-24.04"
+echo "   Для Debian 12:      ./bin/os-detector-debian-12"
+echo "   Для Kali Linux:     ./bin/os-detector-kali-linux"
