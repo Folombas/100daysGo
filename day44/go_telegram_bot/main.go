@@ -37,17 +37,21 @@ func main() {
 	}
 
 	// Регистрируем обработчики команд
-	bot.Handle("/start", handleStart)
-	bot.Handle("/help", handleHelp)
-	bot.Handle("/go", handleGoFact)
-	bot.Handle("/code", handleCodeExample)
-	bot.Handle("/links", handleLinks)
-	bot.Handle("/weather", handleWeather)
-	
-	// Обработчик текстовых сообщений
-	bot.Handle(telebot.OnText, handleText)
+bot.Handle("/start", handleStart)
+bot.Handle("/help", handleHelp)
+bot.Handle("/go", handleGoFact)
+bot.Handle("/code", handleCodeExample)
+bot.Handle("/links", handleLinks)
+bot.Handle("/weather", handleWeather)
+
+// Обработчик callback-кнопок
+bot.Handle(telebot.OnCallback, handleCallback)
+
+// Обработчик текстовых сообщений (включая кнопки)
+bot.Handle(telebot.OnText, handleText)
 
 	// Запускаем бота
 	fmt.Println("🤖 Бот запущен и готов к работе...")
+	fmt.Println("🎯 Теперь с интерактивными кнопками!")
 	bot.Start()
 }
