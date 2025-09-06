@@ -45,5 +45,5 @@ func main() {
 			fmt.Printf("%s: Идеальный день для изучения чего-то ещё в Go!\n", dayLabel)
 		}
 	}
-	fmt.Println("Сегодня вечером 5 сентября 2025 года мы изучаем Error Handling: Proper error management techniques in Go.")
+	fmt.Println("Сегодня днём 6 сентября 2025 года мы изучаем Why use Go.")
 }
