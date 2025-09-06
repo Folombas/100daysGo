@@ -1,0 +1,17 @@
+# Environment variables
+.env
+
+# Binaries
+*.exe
+*.out
+*.app
+
+# Dependency directories
+vendor/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
