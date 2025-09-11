@@ -1,0 +1,18 @@
+# Файлы окружения
+.env
+.env.local
+
+# Бинарные файлы
+bot
+bot.exe
+
+# Директории сборки
+/bin/
+/target/
+
+# Файлы IDE
+.idea/
+.vscode/
+
+# Локальные конфигурации
+config.local.go
