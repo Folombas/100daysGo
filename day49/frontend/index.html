@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Угадай число</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <h1>Угадай число</h1>
+            <p class="attempts-count">От 1 до 100 • Попыток: {{ 10 - attempt }}/10</p>
+
+            <div class="progress-bar">
+                <div class="progress" :style="{ width: (attempt / 10 * 100) + '%' }"></div>
+            </div>
+
+            <div v-if="gameId">
+                <div class="input-group">
+                    <input v-model.number="guess" type="number" min="1" max="100"
+                           placeholder="Ваше число" @keyup.enter="submitGuess">
+                    <button @click="submitGuess">Угадать</button>
+                </div>
+
+                <div class="message" :class="messageClass" v-if="message">
+                    {{ message }}
+                </div>
+
+                <div class="attempts-list" v-if="attempts.length > 0">
+                    <div class="attempt-item" v-for="(attempt, index) in attempts" :key="index">
+                        <span class="attempt-number">#{{ index + 1 }}</span>
+                        <span class="attempt-guess">{{ attempt.guess }}</span>
+                        <span class="attempt-result">{{ attempt.result }}</span>
+                    </div>
+                </div>
+            </div>
+            <div v-else>
+                <p>Загрузка игры...</p>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
