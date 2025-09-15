@@ -1,0 +1,76 @@
+:root{
+	--bg:#0f172a;
+	--panel:#111827;
+	--muted:#9ca3af;
+	--text:#e5e7eb;
+	--brand:#22d3ee;
+	--brand-2:#60a5fa;
+	--accent:#16a34a;
+}
+*{box-sizing:border-box}
+body{
+	margin:0;
+	font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;
+	background:linear-gradient(160deg,var(--bg),#020617);
+	color:var(--text);
+}
+.container{
+	max-width:980px;
+	margin:0 auto;
+	padding:32px 16px 64px;
+}
+.hero{
+	text-align:center;
+	margin-bottom:24px;
+}
+.hero h1{
+	font-size:40px;
+	margin:0 0 8px 0;
+	background:linear-gradient(90deg,var(--brand),var(--brand-2));
+	-webkit-background-clip:text;
+	background-clip:text;
+	color:transparent;
+}
+.subtitle{
+	color:var(--muted);
+	margin:0 0 16px 0;
+}
+.cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:16px 0}
+.btn{
+	background:linear-gradient(90deg,var(--brand),var(--brand-2));
+	color:#0b1020;
+	border:none;
+	padding:10px 14px;
+	border-radius:10px;
+	font-weight:700;
+	cursor:pointer;
+	text-decoration:none;
+	box-shadow:0 8px 24px rgba(34,211,238,.25);
+}
+.btn-secondary{
+	background:#1f2937;
+	color:var(--text);
+	box-shadow:none;
+	border:1px solid #374151;
+}
+.btn.small{padding:6px 10px;font-weight:600;border-radius:8px}
+.examples{display:grid;grid-template-columns:1fr;gap:16px;margin-top:24px}
+@media(min-width:800px){.examples{grid-template-columns:1fr 1fr}}
+.card{
+	background:rgba(17,24,39,.6);
+	backdrop-filter:blur(6px);
+	border:1px solid #1f2937;
+	border-radius:14px;
+	overflow:hidden;
+}
+.card-header{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #1f2937}
+.card-header h3{margin:0;font-size:18px}
+.tags{color:var(--muted);font-size:12px}
+.card-body{padding:14px 16px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+pre{margin:0;background:#0b1220;border:1px solid #1f2937;padding:12px;border-radius:10px;overflow:auto;max-height:320px}
+pre.code{border-left:3px solid var(--brand)}
+pre.output{border-left:3px solid var(--accent)}
+.hidden{display:none}
+.toast{position:fixed;right:16px;bottom:16px;background:#111827;border:1px solid #1f2937;border-radius:10px;padding:10px 12px;color:var(--text);opacity:0;transform:translateY(8px);transition:all .25s ease}
+.toast.show{opacity:1;transform:translateY(0)}
