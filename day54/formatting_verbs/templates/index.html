@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Глаголы форматирования в Go</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Глаголы форматирования в Go</h1>
+            <p>Изучите различные способы форматирования вывода в языке программирования Go</p>
+        </header>
+
+        <div class="filters">
+            <input type="text" id="searchInput" placeholder="Поиск по глаголам или описанию...">
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">Все</button>
+                <button class="filter-btn" data-filter="string">Строки</button>
+                <button class="filter-btn" data-filter="number">Числа</button>
+                <button class="filter-btn" data-filter="struct">Структуры</button>
+                <button class="filter-btn" data-filter="special">Специальные</button>
+            </div>
+        </div>
+
+        <div class="examples-grid">
+            {{range .Examples}}
+            <div class="example-card" data-category="{{.category}}">
+                <div class="verb-header">
+                    <h3>{{.verb}}</h3>
+                    <span class="copy-btn" onclick="copyToClipboard('{{.verb}}')">📋</span>
+                </div>
+                <div class="description">
+                    {{.description}}
+                </div>
+                <div class="code-example">
+                    <pre><code>{{.example}}</code></pre>
+                </div>
+                <div class="result">
+                    <pre><code>{{.result}}</code></pre>
+                </div>
+            </div>
+            {{end}}
+        </div>
+
+        <footer>
+            <p>Создано в рамках марафона "100 дней программирования на Go" • Day 54</p>
+        </footer>
+    </div>
+
+    <script>
+        // Фильтрация и поиск
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            filterExamples(searchTerm);
+        });
+
+        // Обработчики для кнопок фильтрации
+        document.querySelectorAll('.filter-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                const filter = this.getAttribute('data-filter');
+                filterExamplesByCategory(filter);
+            });
+        });
+
+        function filterExamples(searchTerm) {
+            document.querySelectorAll('.example-card').forEach(card => {
+                const verb = card.querySelector('h3').textContent.toLowerCase();
+                const description = card.querySelector('.description').textContent.toLowerCase();
+
+                if (verb.includes(searchTerm) || description.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function filterExamplesByCategory(category) {
+            document.querySelectorAll('.example-card').forEach(card => {
+                if (category === 'all') {
+                    card.style.display = 'block';
+                } else {
+                    const cardCategory = card.getAttribute('data-category');
+                    card.style.display = cardCategory === category ? 'block' : 'none';
+                }
+            });
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Глагол скопирован: ' + text);
+            }).catch(err => {
+                console.error('Ошибка копирования: ', err);
+            });
+        }
+    </script>
+</body>
+</html>
