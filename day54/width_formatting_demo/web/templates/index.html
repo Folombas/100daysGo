@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .Title }}</title>
+    <style>
+        :root {
+            --primary: #6a5acd; /* сланцевый синий */
+            --bg: #fafafa;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --border: #ecf0f1;
+            --hover: #f0f4ff;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: linear-gradient(135deg, var(--primary), #483d8b);
+            color: white;
+            padding: 3rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+        .example {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        .example:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(106, 90, 205, 0.15);
+            background: var(--hover);
+        }
+        .description {
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        .code {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 1.2rem;
+            border-radius: 8px;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 1.2rem 0;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+        .output {
+            background: #e8f4ff;
+            color: #2c3e50;
+            padding: 1.2rem;
+            border-left: 5px solid var(--primary);
+            font-family: 'Courier New', monospace;
+            margin: 1.2rem 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        h2 {
+            text-align: center;
+            margin: 2rem 0 1rem;
+            color: var(--primary);
+        }
+        footer {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: #7f8c8d;
+            font-size: 0.95rem;
+            border-top: 1px solid var(--border);
+            margin-top: 3rem;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>📏 Форматирование ширины в Go</h1>
+        <p>Day 54x — Контролируй отступы, выравнивание и таблицы как профессионал!</p>
+    </header>
+
+    <div class="container">
+        <h2>Обучающие примеры</h2>
+        <p>Каждый пример показывает, как использовать спецификаторы ширины в <code>fmt.Printf</code> для идеального форматирования.</p>
+
+        {{ range .Examples }}
+        <div class="example">
+            <div class="description">{{ .Description }}</div>
+            <div class="code">{{ .Code }}</div>
+            <div class="output">{{ .Output }}</div>
+        </div>
+        {{ end }}
+
+        <div class="example">
+            <div class="description">🎯 Совет от наставника</div>
+            <p>Используй <code>%*s</code> для динамической ширины, <code>%-10s</code> для выравнивания по левому краю, <code>%05d</code> для заполнения нулями. Это особенно полезно при выводе таблиц, логов или отчётов.</p>
+            <p>Кириллица? Без проблем — Go корректно считает ширину UTF-8 строк.</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>Day 54x / 100 — Go марафон от вашего нейро-ментора 💡</p>
+        <p>Форматируй красиво. Кодируй с удовольствием. Никаких пропусков!</p>
+    </footer>
+</body>
+</html>
