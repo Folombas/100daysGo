@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slices в Go: Динамические массивы Day 57</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔪 Slices в Go: Day 57</h1>
+            <p>Динамические массивы - мощный инструмент языка Go</p>
+        </div>
+
+        <div class="demo-container">
+            <div class="demo-panel">
+                <h2 class="panel-title">Интерактивная демонстрация</h2>
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="arrayInput">Исходный срез (через запятую):</label>
+                        <input type="text" id="arrayInput" value="1, 2, 3, 4, 5" placeholder="Введите числа через запятую">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="operation">Операция:</label>
+                        <select id="operation">
+                            <option value="create">Создать срез</option>
+                            <option value="append">Добавить элемент</option>
+                            <option value="access">Доступ по индексу</option>
+                            <option value="update">Обновить элемент</option>
+                            <option value="slice">Получить подсрез</option>
+                            <option value="length">Длина среза</option>
+                            <option value="capacity">Емкость среза</option>
+                            <option value="iterate">Итерация по элементам</option>
+                            <option value="copy">Копирование среза</option>
+                            <option value="concat">Объединение срезов</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group" id="valueGroup" style="display: none;">
+                        <label for="value">Значение:</label>
+                        <input type="number" id="value" value="10">
+                    </div>
+
+                    <div class="control-group" id="indexGroup" style="display: none;">
+                        <label for="index">Индекс:</label>
+                        <input type="number" id="index" value="0">
+                    </div>
+
+                    <div class="control-group" id="sliceGroup" style="display: none;">
+                        <label for="start">Начальный индекс:</label>
+                        <input type="number" id="start" value="0">
+                        <label for="end">Конечный индекс:</label>
+                        <input type="number" id="end" value="2">
+                    </div>
+
+                    <div class="control-group" id="concatGroup" style="display: none;">
+                        <label for="arrayInput2">Второй срез (через запятую):</label>
+                        <input type="text" id="arrayInput2" value="6, 7, 8" placeholder="Введите числа через запятую">
+                    </div>
+
+                    <button id="runDemo">Выполнить операцию</button>
+                </div>
+
+                <div class="result">
+                    <h3>Результат:</h3>
+                    <div id="demoResult">Выполните операцию для просмотра результата</div>
+                    <div class="array-visualization" id="visualization"></div>
+                    <div class="explanation" id="explanation"></div>
+                </div>
+            </div>
+
+            <div class="demo-panel">
+                <h2 class="panel-title">Визуализация среза</h2>
+                <div id="memoryVisualization">
+                    <div class="array-visualization" id="originalArray">
+                        <!-- Исходный массив будет здесь -->
+                    </div>
+                    <div class="explanation">
+                        <p>Срез в Go состоит из трех компонентов:</p>
+                        <ul>
+                            <li><strong>Указатель</strong> на массив</li>
+                            <li><strong>Длина</strong> (количество элементов)</li>
+                            <li><strong>Емкость</strong> (вместимость底层数组)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="examples-section">
+            <h2 class="panel-title">Примеры использования срезов</h2>
+            <div class="examples-grid">
+                <div class="example-card">
+                    <h3>Создание среза</h3>
+                    <div class="code-block">
+// Создание среза с начальными значениями
+slice := []int{1, 2, 3, 4, 5}
+
+// Создание среза с помощью make
+slice := make([]int, 5)     // длина и емкость = 5
+slice := make([]int, 3, 5)  // длина = 3, емкость = 5
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <h3>Добавление элементов</h3>
+                    <div class="code-block">
+slice := []int{1, 2, 3}
+slice = append(slice, 4)      // [1, 2, 3, 4]
+slice = append(slice, 5, 6)   // [1, 2, 3, 4, 5, 6]
+
+// Добавление одного среза к другому
+other := []int{7, 8, 9}
+slice = append(slice, other...) // [1, 2, 3, 4, 5, 6, 7, 8, 9]
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <h3>Срезы (slicing)</h3>
+                    <div class="code-block">
+arr := [5]int{1, 2, 3, 4, 5}
+slice := arr[1:4]  // [2, 3, 4] (индексы 1-3)
+
+// Создание среза из массива
+slice := arr[:3]   // [1, 2, 3] (индексы 0-2)
+slice := arr[2:]   // [3, 4, 5] (индексы 2-4)
+slice := arr[:]    // [1, 2, 3, 4, 5] (все элементы)
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <h3>Копирование срезов</h3>
+                    <div class="code-block">
+src := []int{1, 2, 3, 4, 5}
+dst := make([]int, 3)
+
+// Копируем только 3 элемента
+n := copy(dst, src)  // n = 3, dst = [1, 2, 3]
+
+// Полное копирование среза
+dst := make([]int, len(src))
+copy(dst, src)  // dst = [1, 2, 3, 4, 5]
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Day 57 из 100 дней программирования на Go • Динамические массивы — мощь и гибкость</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const operationSelect = document.getElementById('operation');
+            const valueGroup = document.getElementById('valueGroup');
+            const indexGroup = document.getElementById('indexGroup');
+            const sliceGroup = document.getElementById('sliceGroup');
+            const concatGroup = document.getElementById('concatGroup');
+
+            // Обработчик изменения операции
+            operationSelect.addEventListener('change', function() {
+                valueGroup.style.display = 'none';
+                indexGroup.style.display = 'none';
+                sliceGroup.style.display = 'none';
+                concatGroup.style.display = 'none';
+
+                switch(this.value) {
+                    case 'append':
+                        valueGroup.style.display = 'block';
+                        break;
+                    case 'access':
+                    case 'update':
+                        indexGroup.style.display = 'block';
+                        break;
+                    case 'slice':
+                        sliceGroup.style.display = 'block';
+                        break;
+                    case 'concat':
+                        concatGroup.style.display = 'block';
+                        break;
+                }
+            });
+
+            // Обработчик выполнения операции
+            document.getElementById('runDemo').addEventListener('click', function() {
+                const input = document.getElementById('arrayInput').value;
+                const operation = document.getElementById('operation').value;
+
+                // Парсим входной массив
+                const inputArray = input.split(',').map(item => parseInt(item.trim())).filter(item => !isNaN(item));
+
+                // Подготавливаем данные для запроса
+                const requestData = {
+                    operation: operation,
+                    input: inputArray
+                };
+
+                // Добавляем дополнительные параметры в зависимости от операции
+                if (operation === 'append') {
+                    requestData.value = parseInt(document.getElementById('value').value);
+                } else if (operation === 'access' || operation === 'update') {
+                    requestData.index = parseInt(document.getElementById('index').value);
+                    if (operation === 'update') {
+                        requestData.value = parseInt(document.getElementById('value').value);
+                    }
+                } else if (operation === 'slice') {
+                    requestData.start = parseInt(document.getElementById('start').value);
+                    requestData.end = parseInt(document.getElementById('end').value);
+                } else if (operation === 'concat') {
+                    const input2 = document.getElementById('arrayInput2').value;
+                    requestData.input2 = input2.split(',').map(item => parseInt(item.trim())).filter(item => !isNaN(item));
+                }
+
+                // Отправляем запрос на сервер
+                fetch('/slice-operation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Отображаем результат
+                    document.getElementById('demoResult').textContent =
+                        `Результат: [${data.result.join(', ')}]`;
+
+                    // Отображаем объяснение
+                    document.getElementById('explanation').textContent = data.explanation;
+
+                    // Визуализируем массив
+                    const visualization = document.getElementById('visualization');
+                    visualization.innerHTML = '';
+
+                    data.result.forEach((value, index) => {
+                        const element = document.createElement('div');
+                        element.className = `array-element ${index === 0 ? 'index-0' : ''}`;
+                        element.textContent = value;
+                        element.setAttribute('data-index', index);
+                        visualization.appendChild(element);
+                    });
+                })
+                .catch(error => {
+                    document.getElementById('demoResult').textContent = 'Ошибка: ' + error.message;
+                });
+            });
+
+            // Инициализация визуализации исходного массива
+            function initVisualization() {
+                const input = document.getElementById('arrayInput').value;
+                const inputArray = input.split(',').map(item => parseInt(item.trim())).filter(item => !isNaN(item));
+
+                const visualization = document.getElementById('originalArray');
+                visualization.innerHTML = '';
+
+                inputArray.forEach((value, index) => {
+                    const element = document.createElement('div');
+                    element.className = `array-element ${index === 0 ? 'index-0' : ''}`;
+                    element.textContent = value;
+                    element.setAttribute('data-index', index);
+                    visualization.appendChild(element);
+                });
+            }
+
+            // Инициализируем визуализацию при загрузке
+            initVisualization();
+
+            // Обновляем визуализацию при изменении входного массива
+            document.getElementById('arrayInput').addEventListener('change', initVisualization);
+        });
+    </script>
+</body>
+</html>
