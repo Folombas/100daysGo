@@ -22,7 +22,7 @@ func main() {
 	fmt.Println("🚀 1. Базовые операции с Map:")
 	demoBasicMaps()
 
-	fmt.Println("\n🌈 2. Продвинутые Map:")
+	fmt.Println("\n💎 2. Продвинутые Map:")
 	demoAdvancedMaps()
 
 	fmt.Println("\n⚡ 3. Операции с Map:")
