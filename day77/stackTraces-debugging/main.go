@@ -7,13 +7,13 @@ import (
 	"time"
 )
 
-// CoffeePotatoHybrid представляет наш эксперимент
+// CoffeePotatoHybrid представляет наш кофе-картофельный эксперимент
 type CoffeePotatoHybrid struct {
 	Name        string
 	GrowthStage int
 }
 
-// NewCoffeePotato создает новый гибрид
+// NewCoffeePotato создает новый гибрид кофе с картофелем - Кофертофель
 func NewCoffeePotato(name string) *CoffeePotatoHybrid {
 	return &CoffeePotatoHybrid{
 		Name:        name,
