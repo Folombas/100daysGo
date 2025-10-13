@@ -36,7 +36,7 @@ func DemonstrateUnbufferedChannels() {
 		}
 
 		for _, mushroom := range mushrooms {
-			fmt.Printf("   🍄 %s нашел %s (%dсм)\n", picker.Name, mushroom.Type, mushroom.Size)
+			fmt.Printf("   🍄 %s нашел %s (%dсм)", picker.Name, mushroom.Type, mushroom.Size)
 			fmt.Printf("   🤲 Передает %s... (ожидает получателя)\n", mushroom.Type)
 			unbufferedChan <- mushroom
 			fmt.Printf("   ✅ %s передан!\n", mushroom.Type)
@@ -54,7 +54,7 @@ func DemonstrateUnbufferedChannels() {
 	}()
 
 	time.Sleep(5 * time.Second)
-	fmt.Println("   🎉 Все грибы переданы из рук в руки!\n")
+	fmt.Println("   🎉 Все грибы переданы из рук в руки!")
 }
 
 // DemonstrateBufferedChannels демонстрирует буферизованные каналы
@@ -104,7 +104,7 @@ func DemonstrateBufferedChannels() {
 	}()
 
 	time.Sleep(6 * time.Second)
-	fmt.Println("   🎉 Грузовик разгружен!\n")
+	fmt.Println("   🎉 Грузовик разгружен!")
 }
 
 // ComparePerformance сравнивает производительность
@@ -234,5 +234,5 @@ func main() {
 	fmt.Println("   • Буфер уменьшает блокировки, но использует больше памяти")
 	fmt.Println("   • Выбор зависит от требований к синхронизации")
 
-	fmt.Println("\n💪 Отлично! Теперь ты разбираешься в каналах как опытный грибник!")
+	fmt.Println("💪 Отлично! Теперь ты разбираешься в каналах как опытный грибник!")
 }
