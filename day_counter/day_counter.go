@@ -45,5 +45,5 @@ func main() {
 			fmt.Printf("%s: Идеальный день для изучения чего-то ещё в Go!\n", dayLabel)
 		}
 	}
-	fmt.Println("Сегодня 18 октября задним числом 2025 мы изучаем - context Package: Concurrency Patterns: Fan-out in Go")
+	fmt.Println("Сегодня 19 октября задним числом 2025 мы изучаем - context Package: Concurrency Patterns: Pipeline in Go")
 }
