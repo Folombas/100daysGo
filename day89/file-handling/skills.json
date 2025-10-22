@@ -1,0 +1,38 @@
+{
+  "name": "SuperGopher89",
+  "level": 2,
+  "total_xp": 500,
+  "skills": [
+    {
+      "name": "Concurrency",
+      "level": 2,
+      "xp": 100,
+      "description": "Параллельное выполнение задач"
+    },
+    {
+      "name": "Channels",
+      "level": 2,
+      "xp": 100,
+      "description": "Коммуникация между горутинами"
+    },
+    {
+      "name": "Interfaces",
+      "level": 2,
+      "xp": 100,
+      "description": "Полиморфизм в Go"
+    },
+    {
+      "name": "Error Handling",
+      "level": 2,
+      "xp": 100,
+      "description": "Обработка ошибок"
+    },
+    {
+      "name": "File I/O",
+      "level": 2,
+      "xp": 100,
+      "description": "Работа с файлами"
+    }
+  ],
+  "last_update": "2025-10-22T22:20:16.8268958+03:00"
+}
