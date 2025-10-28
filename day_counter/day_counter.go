@@ -46,5 +46,5 @@ func main() {
 		}
 	}
 
-	fmt.Println("Сегодня 27 октября 2025 мы проходим тему: The Future of Golang in 2025-2026.")
+	fmt.Println("Сегодня 28 октября 2025 мы проходим тему: `Testing` Package Basics.")
 }
