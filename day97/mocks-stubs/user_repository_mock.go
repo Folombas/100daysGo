@@ -1,28 +1,76 @@
 package main
 
-import "github.com/stretchr/testify/mock"
+import "testing"
 
-// MockUserRepository мок для репозитория пользователей
+// MockUserRepository мок для репозитория пользователей (упрощенная версия)
 type MockUserRepository struct {
-    mock.Mock
+    FindByIDFunc      func(id string) (*User, error)
+    SaveFunc          func(user *User) error
+    UpdateBalanceFunc func(userID string, newBalance float64) error
+
+    // Для отслеживания вызовов
+    FindByIDCalls      []string
+    UpdateBalanceCalls []balanceCall
+}
+
+type balanceCall struct {
+    userID    string
+    newBalance float64
 }
 
 func (m *MockUserRepository) FindByID(id string) (*User, error) {
-    args := m.Called(id)
-    if args.Get(0) == nil {
-        return nil, args.Error(1)
+    m.FindByIDCalls = append(m.FindByIDCalls, id)
+    if m.FindByIDFunc != nil {
+        return m.FindByIDFunc(id)
     }
-    return args.Get(0).(*User), args.Error(1)
+    return &User{
+        ID:      id,
+        Name:    "Mock User",
+        Email:   "mock@example.com",
+        Balance: 100.0,
+    }, nil
 }
 
 func (m *MockUserRepository) Save(user *User) error {
-    args := m.Called(user)
-    return args.Error(0)
+    if m.SaveFunc != nil {
+        return m.SaveFunc(user)
+    }
+    return nil
 }
 
 func (m *MockUserRepository) UpdateBalance(userID string, newBalance float64) error {
-    args := m.Called(userID, newBalance)
-    return args.Error(0)
+    m.UpdateBalanceCalls = append(m.UpdateBalanceCalls, balanceCall{userID, newBalance})
+    if m.UpdateBalanceFunc != nil {
+        return m.UpdateBalanceFunc(userID, newBalance)
+    }
+    return nil
+}
+
+// Assertions для ручной проверки
+func (m *MockUserRepository) AssertFindByIDCalled(t testing.TB, userID string) {
+    found := false
+    for _, call := range m.FindByIDCalls {
+        if call == userID {
+            found = true
+            break
+        }
+    }
+    if !found {
+        t.Errorf("Expected FindByID to be called with %s", userID)
+    }
+}
+
+func (m *MockUserRepository) AssertUpdateBalanceCalled(t testing.TB, userID string, expectedBalance float64) {
+    found := false
+    for _, call := range m.UpdateBalanceCalls {
+        if call.userID == userID && call.newBalance == expectedBalance {
+            found = true
+            break
+        }
+    }
+    if !found {
+        t.Errorf("Expected UpdateBalance to be called with %s and balance %f", userID, expectedBalance)
+    }
 }
 
 // StubUserRepository стаб для репозитория пользователей
@@ -36,7 +84,6 @@ func (s *StubUserRepository) FindByID(id string) (*User, error) {
     if s.FindByIDFunc != nil {
         return s.FindByIDFunc(id)
     }
-    // Возвращаем заглушку по умолчанию
     return &User{
         ID:      id,
         Name:    "Тестовый пользователь",

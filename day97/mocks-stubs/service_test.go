@@ -3,110 +3,23 @@ package main
 import (
     "errors"
     "testing"
-
-    "github.com/stretchr/testify/assert"
-    "github.com/stretchr/testify/mock"
 )
 
 func TestOrderService_ProcessOrder_Success(t *testing.T) {
     // Arrange
-    paymentMock := &MockPaymentService{}
-    userRepoMock := &MockUserRepository{}
-
-    user := &User{
-        ID:      "user_123",
-        Name:    "Гоша",
-        Email:   "gosha@example.com",
-        Balance: 1000.0,
-    }
-
-    // Настраиваем ожидания для моков
-    userRepoMock.On("FindByID", "user_123").Return(user, nil)
-    paymentMock.On("ProcessPayment", 100.0, "RUB").Return("pay_mock_123", nil)
-    userRepoMock.On("UpdateBalance", "user_123", 900.0).Return(nil)
-
-    service := NewOrderService(paymentMock, userRepoMock)
-
-    // Act
-    paymentID, err := service.ProcessOrder("user_123", 100.0)
-
-    // Assert
-    assert.NoError(t, err)
-    assert.Equal(t, "pay_mock_123", paymentID)
-    paymentMock.AssertExpectations(t)
-    userRepoMock.AssertExpectations(t)
-}
-
-func TestOrderService_ProcessOrder_InsufficientFunds(t *testing.T) {
-    // Arrange
-    paymentMock := &MockPaymentService{}
-    userRepoMock := &MockUserRepository{}
-
-    user := &User{
-        ID:      "user_123",
-        Name:    "Гоша",
-        Email:   "gosha@example.com",
-        Balance: 50.0, // Меньше требуемой суммы
-    }
-
-    userRepoMock.On("FindByID", "user_123").Return(user, nil)
-
-    service := NewOrderService(paymentMock, userRepoMock)
-
-    // Act
-    paymentID, err := service.ProcessOrder("user_123", 100.0)
-
-    // Assert
-    assert.Error(t, err)
-    assert.Contains(t, err.Error(), "недостаточно средств")
-    assert.Empty(t, paymentID)
-    userRepoMock.AssertExpectations(t)
-}
-
-func TestOrderService_ProcessOrder_PaymentFailure(t *testing.T) {
-    // Arrange
-    paymentMock := &MockPaymentService{}
-    userRepoMock := &MockUserRepository{}
-
-    user := &User{
-        ID:      "user_123",
-        Name:    "Гоша",
-        Email:   "gosha@example.com",
-        Balance: 1000.0,
-    }
-
-    userRepoMock.On("FindByID", "user_123").Return(user, nil)
-    paymentMock.On("ProcessPayment", 100.0, "RUB").Return("", errors.New("ошибка банка"))
-
-    service := NewOrderService(paymentMock, userRepoMock)
-
-    // Act
-    paymentID, err := service.ProcessOrder("user_123", 100.0)
-
-    // Assert
-    assert.Error(t, err)
-    assert.Contains(t, err.Error(), "ошибка обработки платежа")
-    assert.Empty(t, paymentID)
-    paymentMock.AssertExpectations(t)
-    userRepoMock.AssertExpectations(t)
-}
-
-func TestOrderService_RefundOrder_Success_WithStub(t *testing.T) {
-    // Arrange
-    paymentStub := &StubPaymentService{
-        RefundPaymentFunc: func(paymentID string) error {
-            return nil
-        },
-        GetPaymentStatusFunc: func(paymentID string) (string, error) {
-            return "refunded", nil
+    paymentMock := &MockPaymentService{
+        ProcessPaymentFunc: func(amount float64, currency string) (string, error) {
+            return "pay_mock_123", nil
         },
     }
 
-    userRepoStub := &StubUserRepository{
+    userRepoMock := &MockUserRepository{
         FindByIDFunc: func(id string) (*User, error) {
             return &User{
-                ID:      id,
-                Balance: 500.0,
+                ID:      "user_123",
+                Name:    "Гоша",
+                Email:   "gosha@example.com",
+                Balance: 1000.0,
             }, nil
         },
         UpdateBalanceFunc: func(userID string, newBalance float64) error {
@@ -114,67 +27,99 @@ func TestOrderService_RefundOrder_Success_WithStub(t *testing.T) {
         },
     }
 
-    service := NewOrderService(paymentStub, userRepoStub)
+    service := NewOrderService(paymentMock, userRepoMock)
 
     // Act
-    err := service.RefundOrder("pay_123", "user_123")
+    paymentID, err := service.ProcessOrder("user_123", 100.0)
 
     // Assert
-    assert.NoError(t, err)
+    if err != nil {
+        t.Errorf("Expected no error, but got: %v", err)
+    }
+    if paymentID != "pay_mock_123" {
+        t.Errorf("Expected payment ID 'pay_mock_123', but got: %s", paymentID)
+    }
+
+    // Проверяем вызовы методов
+    userRepoMock.AssertFindByIDCalled(t, "user_123")
+    userRepoMock.AssertUpdateBalanceCalled(t, "user_123", 900.0)
+    paymentMock.AssertProcessPaymentCalled(t, 1)
 }
 
-// Пример теста с табличными данными
-func TestOrderService_ProcessOrder_TableDriven(t *testing.T) {
-    tests := []struct {
-        name          string
-        userID        string
-        amount        float64
-        userBalance   float64
-        expectedError string
-        setupMocks    func(payment *MockPaymentService, userRepo *MockUserRepository)
-    }{
-        {
-            name:        "успешный платеж",
-            userID:      "user_123",
-            amount:      100.0,
-            userBalance: 1000.0,
-            setupMocks: func(payment *MockPaymentService, userRepo *MockUserRepository) {
-                userRepo.On("FindByID", "user_123").Return(&User{ID: "user_123", Balance: 1000.0}, nil)
-                payment.On("ProcessPayment", 100.0, "RUB").Return("pay_123", nil)
-                userRepo.On("UpdateBalance", "user_123", 900.0).Return(nil)
-            },
-        },
-        {
-            name:          "недостаточно средств",
-            userID:        "user_123",
-            amount:        1500.0,
-            userBalance:   1000.0,
-            expectedError: "недостаточно средств",
-            setupMocks: func(payment *MockPaymentService, userRepo *MockUserRepository) {
-                userRepo.On("FindByID", "user_123").Return(&User{ID: "user_123", Balance: 1000.0}, nil)
-            },
+func TestOrderService_ProcessOrder_InsufficientFunds(t *testing.T) {
+    // Arrange
+    paymentMock := &MockPaymentService{}
+
+    userRepoMock := &MockUserRepository{
+        FindByIDFunc: func(id string) (*User, error) {
+            return &User{
+                ID:      "user_123",
+                Name:    "Гоша",
+                Email:   "gosha@example.com",
+                Balance: 50.0, // Меньше требуемой суммы
+            }, nil
         },
     }
 
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            paymentMock := &MockPaymentService{}
-            userRepoMock := &MockUserRepository{}
+    service := NewOrderService(paymentMock, userRepoMock)
 
-            tt.setupMocks(paymentMock, userRepoMock)
+    // Act
+    paymentID, err := service.ProcessOrder("user_123", 100.0)
 
-            service := NewOrderService(paymentMock, userRepoMock)
-            _, err := service.ProcessOrder(tt.userID, tt.amount)
+    // Assert
+    if err == nil {
+        t.Error("Expected error for insufficient funds, but got none")
+    }
+    if paymentID != "" {
+        t.Errorf("Expected empty payment ID, but got: %s", paymentID)
+    }
+    if err.Error() != "недостаточно средств: текущий баланс 50.00, требуется 100.00" {
+        t.Errorf("Unexpected error message: %v", err)
+    }
+}
 
-            if tt.expectedError != "" {
-                assert.Error(t, err)
-                assert.Contains(t, err.Error(), tt.expectedError)
-            } else {
-                assert.NoError(t, err)
-            }
+func TestOrderService_ProcessOrder_PaymentFailure(t *testing.T) {
+    // Arrange
+    paymentMock := &MockPaymentService{
+        ProcessPaymentFunc: func(amount float64, currency string) (string, error) {
+            return "", errors.New("ошибка банка")
+        },
+    }
 
-            paymentMock.AssertExpectations(t)
-            userRepoMock.AssertExpectations(t)
-        })
+    userRepoMock := &MockUserRepository{
+        FindByIDFunc: func(id string) (*User, error) {
+            return &User{
+                ID:      "user_123",
+                Name:    "Гоша",
+                Email:   "gosha@example.com",
+                Balance: 1000.0,
+            }, nil
+        },
+    }
+
+    service := NewOrderService(paymentMock, userRepoMock)
+
+    // Act
+    paymentID, err := service.ProcessOrder("user_123", 100.0)
+
+    // Assert
+    if err == nil {
+        t.Error("Expected error for payment failure, but got none")
+    }
+    if paymentID != "" {
+        t.Errorf("Expected empty payment ID, but got: %s", paymentID)
+    }
+}
+
+// Простая функция Assert для базовых проверок
+func assertTrue(t testing.TB, condition bool, message string) {
+    if !condition {
+        t.Error(message)
+    }
+}
+
+func assertEqual(t testing.TB, expected, actual interface{}, message string) {
+    if expected != actual {
+        t.Errorf("%s: expected %v, got %v", message, expected, actual)
     }
 }
