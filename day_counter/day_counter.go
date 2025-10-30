@@ -46,5 +46,5 @@ func main() {
 		}
 	}
 
-	fmt.Println("Сегодня поздно вечером 29 октября 2025 мы проходим тему: Table-driven Tests.")
+	fmt.Println("Сегодня поздно вечером 30 октября 2025 мы проходим тему: Mocks and Stubs.")
 }
