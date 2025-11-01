@@ -46,5 +46,5 @@ func main() {
 		}
 	}
 
-	fmt.Println("Сегодня вечером 31 октября 2025 мы проходим тему: `httptest` for HTTP Tests.")
+	fmt.Println("Сегодня вечером 1 ноября 2025 мы проходим тему: Testing: Benchmarks.")
 }
