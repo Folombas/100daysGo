@@ -36,7 +36,7 @@ func main() {
 		SalaryRange:   "200k-500k руб/мес",
 		Companies:     []string{"Яндекс", "Ozon", "VK", "Tinkoff", "Сбер", "Kaspersky"},
 		TrendScore:    95,
-		LearningCurve: "2-2,5 года до уверенного профессиональногоуровня",
+		LearningCurve: "2-2,5 года до уверенного профессионального уровня",
 	}
 
 	// Выводим информацию о системе
