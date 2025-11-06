@@ -1,0 +1,33 @@
+# Файлы окружения
+.env
+*.env.local
+*.env.production
+
+# Бинарные файлы
+go-daily-bot
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Директории
+/bin/
+/dist/
+
+# Логи
+*.log
+logs/
+
+# IDE файлы
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# Тестовые данные
+/test-data/
+/temp/
