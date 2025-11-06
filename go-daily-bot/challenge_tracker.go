@@ -24,7 +24,6 @@ func NewChallengeTracker(botStartTime time.Time, startDateStr string) *Challenge
 	}
 }
 
-// Остальной код без изменений...
 func (ct *ChallengeTracker) GetCurrentDay() int {
 	now := time.Now().UTC()
 	days := int(now.Sub(ct.startDate).Hours() / 24)
@@ -42,7 +41,7 @@ func (ct *ChallengeTracker) GetProgressMessage() string {
 	currentDay := ct.GetCurrentDay()
 	progress := float64(currentDay) / 100.0 * 100
 
-	message := fmt.Sprintf("🎯 *100daysGo Перезагрузка*\n\n")
+	message := "🎯 *100daysGo Перезагрузка*\n\n"
 	message += fmt.Sprintf("📅 *Текущий день:* %d из 100\n", currentDay)
 	message += fmt.Sprintf("📊 *Прогресс:* %.1f%%\n\n", progress)
 
