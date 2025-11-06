@@ -320,7 +320,7 @@ func main() {
 	fmt.Println()
 	fmt.Println("💪 СЕГОДНЯШНИЕ ЦЕЛИ:")
 	fmt.Printf("   • Изучить тему: %s\n", getTodayTopic(currentDay))
-	fmt.Println("Сегодня 5 ноября 2025 года мы изучаем тему - Introduction to Go: Setting up the Environment.")
+	fmt.Println("Сегодня 6 ноября 2025 года мы изучаем тему - Introduction to Go: Hello World in Go.")
 	fmt.Println("   • Написать код и сделать коммит")
 	fmt.Println("   • Избегать цифровых наркотиков")
 	fmt.Println("   • Сделать шаг к финансовой свободе")
@@ -328,14 +328,14 @@ func main() {
 	fmt.Println()
 	fmt.Println("🌟 СТАТИСТИКА ЛИЧНОГО РОСТА:")
 	fmt.Printf("   🎮 Видео-игр игнорировано: ~%d сессий\n", growth.GamingAvoided)
-	fmt.Printf("   🔞 xxx-Контента игнорировано: ~%d раз\n", growth.AdultContentAvoided)
+	fmt.Printf("   🔞 xxx-контента игнорировано: ~%d раз\n", growth.AdultContentAvoided)
 	fmt.Printf("   📚 Часов изучения: ~%.1f часов\n", growth.StudyHours)
 	fmt.Printf("   😊 Настроение: %s\n", growth.Mood)
 
 	fmt.Println()
 	fmt.Println("🎯 ДОЛГОСРОЧНАЯ ЦЕЛЬ:")
 	fmt.Printf("   💰 Устроиться Go-разработчиком до: %s\n",
-		startDate.Add(500*24*time.Hour).Format("02.01.2006"))
+		startDate.Add(750*24*time.Hour).Format("02.01.2006"))
 	fmt.Println("   🏠 Перестать беспокоить маму о деньгах")
 	fmt.Println("   🚀 Начать карьеру в IT")
 
