@@ -33,7 +33,7 @@ func (si *SystemInfo) GetSystemMessage() string {
 	message += fmt.Sprintf("🔢 *Процессоры:* %d\n", si.NumCPU)
 	message += fmt.Sprintf("🐹 *Версия Go:* %s\n", si.GoVersion)
 	message += fmt.Sprintf("⏰ *Аптайм:* %s\n", si.formatUptime(uptime))
-	message += fmt.Sprintf("🕒 *Время запуска:* %s", si.StartTime.Format("02.01.2006 15:04:05"))
+	message += fmt.Sprintf("🕒 *Время запуска бота:* %s", si.StartTime.Format("02.01.2006 15:04:05"))
 
 	return message
 }
