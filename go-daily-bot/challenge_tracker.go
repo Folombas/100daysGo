@@ -10,15 +10,21 @@ type ChallengeTracker struct {
 	botStartTime time.Time
 }
 
-func NewChallengeTracker(botStartTime time.Time) *ChallengeTracker {
-	// Дата начала челленджа - 25.10.2025
-	startDate := time.Date(2025, 10, 25, 0, 0, 0, 0, time.UTC)
+func NewChallengeTracker(botStartTime time.Time, startDateStr string) *ChallengeTracker {
+	// Парсим дату начала из конфигурации
+	startDate, err := time.Parse("2006-01-02", startDateStr)
+	if err != nil {
+		// Если ошибка парсинга, используем дату по умолчанию
+		startDate = time.Date(2025, 10, 25, 0, 0, 0, 0, time.UTC)
+	}
+
 	return &ChallengeTracker{
 		startDate:    startDate,
 		botStartTime: botStartTime,
 	}
 }
 
+// Остальной код без изменений...
 func (ct *ChallengeTracker) GetCurrentDay() int {
 	now := time.Now().UTC()
 	days := int(now.Sub(ct.startDate).Hours() / 24)
@@ -36,7 +42,7 @@ func (ct *ChallengeTracker) GetProgressMessage() string {
 	currentDay := ct.GetCurrentDay()
 	progress := float64(currentDay) / 100.0 * 100
 
-	message := fmt.Sprintf("🎯 *100daysGo Перезагрузка*\n\n", currentDay)
+	message := fmt.Sprintf("🎯 *100daysGo Перезагрузка*\n\n")
 	message += fmt.Sprintf("📅 *Текущий день:* %d из 100\n", currentDay)
 	message += fmt.Sprintf("📊 *Прогресс:* %.1f%%\n\n", progress)
 

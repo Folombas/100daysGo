@@ -7,7 +7,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func HandleMessage(bot *tgbotapi.BotAPI, message *tgbotapi.Message, tracker *ChallengeTracker) {
+func HandleMessage(bot *tgbotapi.BotAPI, message *tgbotapi.Message, tracker *ChallengeTracker, config *Config) {
 	log.Printf("👤 %s: %s", message.From.UserName, message.Text)
 
 	var response string
@@ -22,6 +22,13 @@ func HandleMessage(bot *tgbotapi.BotAPI, message *tgbotapi.Message, tracker *Cha
 		response = sysInfo.GetSystemMessage()
 	case "/motivation":
 		response = getMotivationMessage(tracker.GetCurrentDay())
+	case "/config":
+		// Только для администратора
+		if message.From.ID == config.AdminID {
+			response = getConfigInfo(config)
+		} else {
+			response = "❌ Доступ запрещён"
+		}
 	default:
 		response = "🤔 Используй команды:\n/start - Начать\n/progress - Прогресс\n/system - Инфо о системе\n/motivation - Мотивация"
 	}
@@ -34,6 +41,16 @@ func HandleMessage(bot *tgbotapi.BotAPI, message *tgbotapi.Message, tracker *Cha
 	}
 }
 
+func getConfigInfo(config *Config) string {
+	return fmt.Sprintf(`⚙️ *Конфигурация бота:*
+
+🤖 Режим отладки: %v
+📅 Дата начала: %s
+👤 Admin ID: %d
+`, config.DebugMode, config.ChallengeStart, config.AdminID)
+}
+
+// Остальные функции без изменений...
 func getWelcomeMessage() string {
 	return `🚀 *Добро пожаловать в 100daysGo Перезагрузка!*
 
