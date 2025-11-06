@@ -7,7 +7,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func HandleMessage(bot *tgbotapi.BotAPI, message *tgbotapi.Message, tracker *ChallengeTracker, config *Config) {
+func HandleMessage(bot *tgbotapi.BotAPI, message *tgbotapi.Message, tracker *ChallengeTracker, sysInfo *SystemInfo, config *Config) {
 	log.Printf("👤 %s: %s", message.From.UserName, message.Text)
 
 	var response string
@@ -18,7 +18,6 @@ func HandleMessage(bot *tgbotapi.BotAPI, message *tgbotapi.Message, tracker *Cha
 	case "/progress", "/day":
 		response = tracker.GetProgressMessage()
 	case "/system", "/info":
-		sysInfo := NewSystemInfo()
 		response = sysInfo.GetSystemMessage()
 	case "/motivation":
 		response = getMotivationMessage(tracker.GetCurrentDay())

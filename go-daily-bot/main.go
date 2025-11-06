@@ -29,6 +29,8 @@ func main() {
 	// Инициализируем трекер челленджа
 	tracker := NewChallengeTracker(startTime, config.ChallengeStart)
 
+	sysInfo := NewSystemInfo(startTime)
+
 	// Настраиваем обновления
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -44,6 +46,6 @@ func main() {
 			continue
 		}
 
-		HandleMessage(bot, update.Message, tracker, config)
+		HandleMessage(bot, update.Message, tracker, sysInfo, config)
 	}
 }
