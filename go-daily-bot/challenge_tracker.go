@@ -15,7 +15,7 @@ func NewChallengeTracker(botStartTime time.Time, startDateStr string) *Challenge
 	startDate, err := time.Parse("2006-01-02", startDateStr)
 	if err != nil {
 		// Если ошибка парсинга, используем дату по умолчанию
-		startDate = time.Date(2025, 10, 25, 0, 0, 0, 0, time.UTC)
+		startDate = time.Date(2024, 10, 25, 0, 0, 0, 0, time.UTC)
 	}
 
 	return &ChallengeTracker{
@@ -34,7 +34,7 @@ func (ct *ChallengeTracker) GetCurrentDay() int {
 	if days > 100 {
 		return 100 // Максимальный день - сотый
 	}
-	return days + 1 // +1 потому что первый день считается как день 1
+	return days
 }
 
 func (ct *ChallengeTracker) GetProgressMessage() string {
@@ -45,18 +45,19 @@ func (ct *ChallengeTracker) GetProgressMessage() string {
 	message += fmt.Sprintf("📅 *Текущий день:* %d из 100\n", currentDay)
 	message += fmt.Sprintf("📊 *Прогресс:* %.1f%%\n\n", progress)
 
-	// Визуальный прогресс-бар
+	// Визуальный прогресс-бар (реальные данные)
 	bar := ct.getProgressBar(currentDay)
 	message += fmt.Sprintf("`%s`\n\n", bar)
 
-	message += fmt.Sprintf("⏰ *Время запуска бота:* %s\n", ct.botStartTime.Format("02.01.2006 15:04:05"))
-	message += fmt.Sprintf("🕒 *Текущее время:* %s", time.Now().Format("02.01.2006 15:04:05"))
+	message += fmt.Sprintf("⏰ *Запуск бота:* %s\n", ct.botStartTime.Format("15:04:05"))
+	message += fmt.Sprintf("📅 *Текущая дата:* %s", time.Now().Format("02.01.2006"))
 
 	return message
 }
 
 func (ct *ChallengeTracker) getProgressBar(currentDay int) string {
 	width := 20
+	// Реальное количество заполненных символов (каждый = 5 дней)
 	completed := (currentDay * width) / 100
 	if completed > width {
 		completed = width
@@ -65,9 +66,9 @@ func (ct *ChallengeTracker) getProgressBar(currentDay int) string {
 	bar := ""
 	for i := 0; i < width; i++ {
 		if i < completed {
-			bar += "█"
+			bar += "█" // Заполненные дни
 		} else {
-			bar += "░"
+			bar += "░" // Оставшиеся дни
 		}
 	}
 	return bar
