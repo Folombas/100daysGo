@@ -3,9 +3,16 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
+	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
+
+// Инициализируем генератор случайных чисел
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 func HandleMessage(bot *tgbotapi.BotAPI, message *tgbotapi.Message, tracker *ChallengeTracker, sysInfo *SystemInfo, config *Config) {
 	log.Printf("👤 %s: %s", message.From.UserName, message.Text)
@@ -20,16 +27,16 @@ func HandleMessage(bot *tgbotapi.BotAPI, message *tgbotapi.Message, tracker *Cha
 	case "/system", "/info":
 		response = sysInfo.GetSystemMessage()
 	case "/motivation":
-		response = getMotivationMessage(tracker.GetCurrentDay())
+		response = getMotivationMessage()
 	case "/config":
 		// Только для администратора
 		if message.From.ID == config.AdminID {
 			response = getConfigInfo(config)
 		} else {
-			response = "❌ Доступ запрещён"
+			response = "❌ Доступ запрещён. Эта команда только для администратора."
 		}
 	default:
-		response = "🤔 Используй команды:\n/start - Начать\n/progress - Прогресс\n/system - Инфо о системе\n/motivation - Мотивация"
+		response = "🤔 Используй команды:\n/start - Начать\n/progress - Прогресс\n/system - Инфо о системе\n/motivation - Мотивация\n/config - Настройки (только для админа)"
 	}
 
 	msg := tgbotapi.NewMessage(message.Chat.ID, response)
@@ -40,16 +47,6 @@ func HandleMessage(bot *tgbotapi.BotAPI, message *tgbotapi.Message, tracker *Cha
 	}
 }
 
-func getConfigInfo(config *Config) string {
-	return fmt.Sprintf(`⚙️ *Конфигурация бота:*
-
-🤖 Режим отладки: %v
-📅 Дата начала: %s
-👤 Admin ID: %d
-`, config.DebugMode, config.ChallengeStart, config.AdminID)
-}
-
-// Остальные функции без изменений...
 func getWelcomeMessage() string {
 	return `🚀 *Добро пожаловать в 100daysGo Перезагрузка!*
 
@@ -64,7 +61,8 @@ func getWelcomeMessage() string {
 Каждый день приближает тебя к цели! 💪`
 }
 
-func getMotivationMessage(day int) string {
+
+func getMotivationMessage() string {
 	motivations := []string{
 		"🔥 Ты делаешь то, о чем другие только мечтают!",
 		"💪 Каждая строка кода - шаг к лучшей версии себя!",
@@ -173,6 +171,16 @@ func getMotivationMessage(day int) string {
 		"🌍 Ты меняешь цифровой ландшафт!",
 	}
 
-	index := day % len(motivations)
-	return fmt.Sprintf("📅 День %d:\n\n%s", day, motivations[index])
+	// Генерируем случайный индекс
+	index := rand.Intn(len(motivations))
+	return fmt.Sprintf("💫 *Мотивация дня:*\n\n%s", motivations[index])
+}
+
+func getConfigInfo(config *Config) string {
+	return fmt.Sprintf(`⚙️ *Конфигурация бота:*
+
+🤖 Режим отладки: %v
+📅 Дата начала: %s
+👤 Admin ID: %d
+`, config.DebugMode, config.ChallengeStart, config.AdminID)
 }
