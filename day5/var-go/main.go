@@ -29,8 +29,6 @@ func main() {
 
 	demoVarDeclaration()
 	demoShortDeclaration()
-	demoZeroValues()
-	demoTypeInference()
 	demoConstants()
 	demoBestPractices()
 }
