@@ -29,8 +29,6 @@ func main() {
 
 	demoVarDeclaration()
 	demoShortDeclaration()
-	demoConstants()
-	demoBestPractices()
 }
 
 func demoVarDeclaration() {
