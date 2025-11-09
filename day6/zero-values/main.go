@@ -23,7 +23,6 @@ func main() {
 	var slice []string
 	var mapping map[string]int
 	var pointer *int
-	var function func()
 
 	fmt.Println("\n📊 Zero Values для базовых типов:")
 	fmt.Printf("int: %d\n", integer)
@@ -33,7 +32,6 @@ func main() {
 	fmt.Printf("slice: %v (nil: %t)\n", slice, slice == nil)
 	fmt.Printf("map: %v (nil: %t)\n", mapping, mapping == nil)
 	fmt.Printf("pointer: %v (nil: %t)\n", pointer, pointer == nil)
-	fmt.Printf("function: %v (nil: %t)\n", function, function == nil)
 
 	// Демонстрация для структуры
 	fmt.Println("\n👤 Zero Values для структуры Person:")
@@ -53,6 +51,6 @@ func main() {
 			i+1, user.Name, user.Age, user.Balance)
 	}
 
-	fmt.Println("\n🎯 Вывод: В Go каждая переменная инициализируется нулевым значением!")
+	fmt.Println("\n🎯 Вывод: Go каждую переменную инициализирует нулевым значением!")
 	fmt.Println("Это делает код безопаснее и предсказуемее ❤️")
 }
