@@ -10,18 +10,18 @@ func main() {
 	fmt.Println("=== Переменные в Go ===")
 
 	// Объявление переменных с явным типом
-	var age int = 25
-	var name string = "Алексей"
-	var height float64 = 1.75
+	var age int = 37
+	var name string = "Гоша"
+	var height float64 = 1.82
 	var isActive bool = true
 
 	fmt.Printf("Имя: %s\n", name)
 	fmt.Printf("Возраст: %d\n", age)
 	fmt.Printf("Рост: %.2fм\n", height)
-	fmt.Printf("Активен: %t\n", isActive)
+	fmt.Printf("Студент: %t\n", isActive)
 
 	// Объявление переменных с неявным типом
-	year := 2024
+	year := 2025
 	temp := 36.6
 	city := "Москва"
 	isStudent := false
