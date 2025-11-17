@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+	"strings"
 )
 
 // 🧮 Основные данные
@@ -164,11 +165,18 @@ func drawFooter() {
 	fmt.Printf("   👵 Мама: \"Ну ладно, я вижу ты стараешься... может, через год купишь мне дачу?\"\n")
 }
 
-// 🔁 Вспомогательные функции
 func generateProgressBar(percent float64, width int) string {
 	filled := int(percent/100*float64(width) + 0.5)
 	empty := width - filled
-	return "🟩"[0:filled] + "⬜"[0:empty]
+
+	var bar strings.Builder
+	for i := 0; i < filled; i++ {
+		bar.WriteString("🟩")
+	}
+	for i := 0; i < empty; i++ {
+		bar.WriteString("⬜")
+	}
+	return bar.String()
 }
 
 func getEventEmoji(t string) string {
