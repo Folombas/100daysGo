@@ -37,21 +37,20 @@ func calculateCurrentDay() int {
 // 🧠 Инициализация статистики
 func initStats() ChallengeStats {
 	percent := float64(currentDay) / 100 * 100
-	xp := 100 + currentDay*10
-	level := 1 + (currentDay*10 + 100) / 1000
+	level := 1 + (100 + currentDay*10) / 1000 // Исправлено вычисление уровня
 
 	return ChallengeStats{
 		DaysCompleted:   currentDay,
 		DaysRemaining:   100 - currentDay,
 		ProgressPercent: percent,
 		Level:           level,
-		Experience:      currentDay*10 + 100,
+		Experience:      100 + currentDay*10, // ✅ Эквивалентно xp
 		NextLevelXP:     level * 1000,
 		WillpowerLevel:  getWillpowerLevel(currentDay),
 		MentalState:     getMentalState(currentDay),
 		CurrentMood:     getCurrentMood(currentDay),
 		CodingPower:     min(10+currentDay*5, 1000),
-		Streak:          currentDay, // упрощённо
+		Streak:          currentDay,
 		MaxStreak:       currentDay,
 	}
 }
