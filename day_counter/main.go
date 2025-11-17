@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"math/rand"
-	"time"
 	"strings"
+	"time"
 )
 
 // 🧮 Основные данные
@@ -38,7 +38,7 @@ func calculateCurrentDay() int {
 // 🧠 Инициализация статистики
 func initStats() ChallengeStats {
 	percent := float64(currentDay) / 100 * 100
-	level := 1 + (100 + currentDay*10) / 1000 // Исправлено вычисление уровня
+	level := 1 + (100+currentDay*10)/1000 // Исправлено вычисление уровня
 
 	return ChallengeStats{
 		DaysCompleted:   currentDay,
@@ -118,7 +118,7 @@ func drawDailyEvents() {
 
 	fmt.Println("\n🎲 СЛУЧАЙНЫЕ СОБЫТИЯ:")
 	for _, e := range dailyEvents {
-		fmt.Printf("   %s %s\n", getEventEmoji(e.Type), e.Description)
+		fmt.Printf("%s %s\n", getEventEmoji(e.Type), e.Description)
 	}
 }
 
@@ -181,20 +181,28 @@ func generateProgressBar(percent float64, width int) string {
 
 func getEventEmoji(t string) string {
 	switch t {
-	case "obstacle": return "🚧"
-	case "victory": return "🎉"
-	case "challenge": return "⚔️"
-	case "quest": return "📜"
+	case "obstacle":
+		return "🚧"
+	case "victory":
+		return "🎉"
+	case "challenge":
+		return "⚔️"
+	case "quest":
+		return "📜"
 	}
 	return "❓"
 }
 
 func getRarityEmoji(t string) string {
 	switch t {
-	case "common": return "⚪"
-	case "rare": return "🔵"
-	case "epic": return "🟣"
-	case "legendary": return "🟡"
+	case "common":
+		return "⚪"
+	case "rare":
+		return "🔵"
+	case "epic":
+		return "🟣"
+	case "legendary":
+		return "🟡"
 	}
 	return "❓"
 }
@@ -230,14 +238,14 @@ type ChallengeStats struct {
 }
 
 type PersonalGrowth struct {
-	GamingSkipped   int
-	StudyHours      float64
-	CodeLines       int
-	ConfidenceLevel int
-	StressLevel     int
-	SocialEnergy    int
-	MomPrideLevel   int
-	RealLifeHours   int
+	GamingSkipped    int
+	StudyHours       float64
+	CodeLines        int
+	ConfidenceLevel  int
+	StressLevel      int
+	SocialEnergy     int
+	MomPrideLevel    int
+	RealLifeHours    int
 	DaysWithoutPanic int
 }
 
