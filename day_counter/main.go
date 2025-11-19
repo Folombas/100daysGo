@@ -95,7 +95,7 @@ func drawHeroCard() {
 	fmt.Printf("👤 Имя: Гоша | Возраст: 37 | Нейротип: СДВГ+ОКР+социофоб\n")
 	fmt.Printf("🎯 Миссия: Из курьера в Golang-разработчика за 100 дней\n")
 	fmt.Printf("📅 Сегодня: %s | Day%d челленджа\n", today.Format("02.01.2006"), currentDay)
-	fmt.Printf("📚 Тема дня: Numeric Types - Runes\n")
+	fmt.Printf("📚 Тема дня: Data Types - Strings\n")
 }
 
 func drawProgressStats() {
