@@ -1,430 +1,408 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
 
-// 🧮 Основные данные
-var (
-	startDate     = time.Date(2025, time.October, 25, 0, 0, 0, 0, time.UTC)
-	today         = time.Now().UTC()
-	currentDay    = calculateCurrentDay()
-	stats         = initStats()
-	growth        = initGrowth()
-	dailyEvents   = generateDailyEvents(3)
-	momQuote      = getRandomQuote(momQuotes)
-	mentorAdvice  = getRandomAdvice()
-	factOfTheDay  = getRandomFact()
-	motivation    = getDailyMotivation()
-	unlockedAchvs = countUnlockedAchievements()
-	activeQuests  = countActiveQuests()
+const (
+	startDateStr   = "2025-10-25"
+	challengeDays  = 100
+	maxLevelXP     = 1000
+	cigaretteCost  = 15.0  // руб/шт
+	beerBottleCost = 120.0 // руб/бутылка
 )
 
-// 📅 Автовычисление текущего дня челленджа
-func calculateCurrentDay() int {
-	days := int(today.Sub(startDate).Hours() / 24)
-	if days < 0 {
-		return 0
+// 🧠 Структуры с человеческим лицом
+type (
+	Stats struct {
+		Days, XP, Level, CodingPower, Streak int
+		Willpower, MentalState, Mood         string
 	}
-	if days > 100 {
-		return 100
+	Growth struct {
+		CigarettesSkipped, BeerBottlesSkipped, PartyNightsSkipped int
+		StudyHours, Confidence, Anxiety                           float64
+		MomPride, DaysClean                                       int
+		MoneySaved                                                float64 // 💰 Деньги, не потраченные в барах
 	}
-	return days
-}
-
-// 🧠 Инициализация статистики
-func initStats() ChallengeStats {
-	percent := float64(currentDay) / 100 * 100
-	level := 1 + (100+currentDay*10)/1000 // Исправлено вычисление уровня
-
-	return ChallengeStats{
-		DaysCompleted:   currentDay,
-		DaysRemaining:   100 - currentDay,
-		ProgressPercent: percent,
-		Level:           level,
-		Experience:      100 + currentDay*10, // ✅ Эквивалентно xp
-		NextLevelXP:     level * 1000,
-		WillpowerLevel:  getWillpowerLevel(currentDay),
-		MentalState:     getMentalState(currentDay),
-		CurrentMood:     getCurrentMood(currentDay),
-		CodingPower:     min(10+currentDay*5, 1000),
-		Streak:          currentDay,
-		MaxStreak:       currentDay,
+	Event       struct{ Emoji, Desc string }
+	Achievement struct {
+		Emoji, Name, Desc string
+		Day               int
+		Rarity            string
 	}
-}
-
-// 🌱 Инициализация личностного роста
-func initGrowth() PersonalGrowth {
-	stress := max(0, 100-currentDay*2)
-	confidence := min(100, currentDay*2)
-	anxiety := max(0, 100-currentDay*3)
-
-	return PersonalGrowth{
-		GamingSkipped:    currentDay * 2,
-		StudyHours:       float64(currentDay) * 1.5,
-		CodeLines:        currentDay * 50,
-		ConfidenceLevel:  confidence,
-		StressLevel:      stress,
-		SocialEnergy:     100 - anxiety,
-		MomPrideLevel:    min(100, currentDay),
-		RealLifeHours:    currentDay * 3,
-		DaysWithoutPanic: currentDay,
+	Quest struct {
+		Name, Desc string
+		Day        int
+		Done       bool
 	}
-}
+)
 
-// 🎯 Основная функция
+// 🌐 Глобальные переменные (инициализируются один раз)
+var (
+	currentDay   = daysSince(startDateStr)
+	stats        = initStats()
+	growth       = initGrowth()
+	momQuote     = randomItem(momQuotes)
+	mentorQuote  = randomItem(mentorQuotes)
+	dailyFact    = randomItem(goFacts)
+	motivation   = randomItem(motivations)
+	events       = generateEvents(3)
+	neuroQuirk   = getNeuroQuirk()
+	achievements = []Achievement{
+		{"🌱", "Первый рассвет без дымки", "Выжил первую ночь без сигарет и бутылки пива", 1, "common"},
+		{"🔥", "Неделя чистого кода", "7 дней без вечеринок, только горутины и отладка", 7, "uncommon"},
+		{"💎", "Алмазная трезвость", "30 дней чистоты без угарных тусовок — как алмазный коммит в репозиторий жизни", 30, "rare"},
+		{"⚡", "Половина пути к свету", "50 дней без табачного тумана в голове — только чистый Go-код", 50, "epic"},
+		{"🌟", "Легендарная перезагрузка", "100 дней новой жизни: из праздного тусовщика в Senior Go-разработчика", 100, "legendary"},
+	}
+	quests = []Quest{
+		{"Day 1", "Написать 'Hello, трезвый мир!'", 1, false},
+		{"Day 20", "Создать HTTP-сервер вместо похода в бар", 20, false},
+		{"Day 50", "Развернуть проект на GitHub вместо похода в клуб", 50, false},
+		{"Day 100", "Получить оффер в Биг-Тех и купить маме дачу", 100, false},
+	}
+	r = rand.New(rand.NewPCG( // ✅ Современный ГПСЧ для нейротипичных паттернов
+		uint64(time.Now().UnixNano()),
+		uint64(time.Now().UnixNano()>>32),
+	))
+)
+
+// 🚀 Основная функция
 func main() {
-	rand.Seed(today.UnixNano())
-
-	drawHeroCard()
-	drawProgressStats()
-	drawDailyEvents()
-	drawPersonalGrowth()
-	drawAchievements()
-	drawFutureProspects()
-	drawFooter()
+	printDailyTopic()
+	printHeroCard()
+	printProgress()
+	printDailyLife()
+	printGrowth()
+	printNeuroUniqueness()
+	printAchievements()
+	printFuture()
+	printFooter()
+	interactiveLineCounter()
 }
 
-// 🎨 Визуальные блоки вывода
-func drawHeroCard() {
-	fmt.Println("\n🚀 100daysGo: HARD CORE 🚀")
-	fmt.Println("══════════════════════════════════════════════")
-	fmt.Printf("👤 Имя: Гоша | Возраст: 37 | Нейротип: СДВГ+ОКР+социофоб\n")
-	fmt.Printf("🎯 Миссия: Из курьера в Golang-разработчика за 100 дней\n")
-	fmt.Printf("📅 Сегодня: %s | Day%d челленджа\n", today.Format("02.01.2006"), currentDay)
-	fmt.Printf("📚 Тема дня: Type Conversion\n")
+// 📚 Учебная тема дня (меняйте значение здесь!)
+var dailyTopic = "Variables" // ←←← ЗДЕСЬ ВВОДИТЕ ТЕКУЩУЮ ТЕМУ
+
+// 📅 Вывод сегодняшней даты и темы обучения
+func printDailyTopic() {
+	now := time.Now()
+	months := []string{
+		"января", "февраля", "марта", "апреля", "мая", "июня",
+		"июля", "августа", "сентября", "октября", "ноября", "декабря",
+	}
+	monthIdx := int(now.Month()) - 1
+	if monthIdx < 0 || monthIdx >= len(months) {
+		monthIdx = 0
+	}
+
+	fmt.Printf("\n%s📅 СЕГОДНЯ %d %s %d ГОДА МЫ ИЗУЧАЕМ ТЕМУ:%s\n",
+		color("1;35"), now.Day(), months[monthIdx], now.Year(), color("0"))
+	fmt.Printf("%s\"%s\"%s\n",
+		color("1;33"), dailyTopic, color("0"))
+	fmt.Println(strings.Repeat("═", 65))
 }
 
-func drawProgressStats() {
-	fmt.Printf("\n🔥 ПРОГРЕСС Day%d/%d (%.0f%%)\n", currentDay, 100, stats.ProgressPercent)
-	fmt.Println(generateProgressBar(stats.ProgressPercent, 25))
-
-	fmt.Printf("🏆 Уровень: %s (Lvl %d | %d/%d XP)\n",
-		getDevLevel(currentDay), stats.Level, stats.Experience, stats.NextLevelXP)
-	fmt.Printf("💪 Сила: %s | 🧠 Состояние: %s | 😄 Настроение: %s\n",
-		stats.WillpowerLevel, stats.MentalState, stats.CurrentMood)
-	fmt.Printf("💡 Сила кода: %d | 🔥 Серия: %d дней\n", stats.CodingPower, stats.Streak)
+// 📅 Расчёт дней с учётом часовых поясов
+func daysSince(dateStr string) int {
+	t, _ := time.Parse(time.DateOnly, dateStr)
+	t = t.UTC()
+	now := time.Now().UTC()
+	days := int(now.Sub(t).Hours() / 24)
+	return clamp(days, 0, challengeDays)
 }
 
-func drawDailyEvents() {
-	fmt.Printf("\n⚡ СЕГОДНЯ:\n")
-	fmt.Printf("   💬 Мама: \"%s\"\n", momQuote)
-	fmt.Printf("   🧙‍♂️ Совет ментора: \"%s\" %s\n", mentorAdvice.Message, mentorAdvice.Emoji)
-	fmt.Printf("   💫 Мотивация: %s\n", motivation)
-	fmt.Printf("   🎲 Факт о Go: %s\n", factOfTheDay)
+// 🧮 Инициализация статистики с психологической глубиной
+func initStats() Stats {
+	xp := 100 + currentDay*10
+	level := 1 + xp/maxLevelXP
 
-	fmt.Println("\n🎲 СЛУЧАЙНЫЕ СОБЫТИЯ:")
-	for _, e := range dailyEvents {
-		fmt.Printf("%s %s\n", getEventEmoji(e.Type), e.Description)
+	states := map[int]string{
+		0: "Хрупкий (как стакан в баре)",
+		1: "Неустойчивый (как походка после вечеринки)",
+		2: "Стабильный (как хороший алгоритм)",
+		3: "Железный (как сервер в дата-центре)",
+		4: "Алмазный (как чистый код после рефакторинга)",
+	}
+
+	mentalMap := map[int]string{
+		0: "Туман в голове после вечеринки",
+		1: "Борьба с привычками как с багами",
+		2: "Чистый код вместо бутылки пива",
+		3: "Глубокий сон вместо жёсткого похмелья",
+		4: "Поток ясного сознания как горутина",
+	}
+
+	moodMap := map[int]string{
+		0: "Ожидание первого коммита",
+		1: "Уверенность в каждом if",
+		2: "Решимость как в цикле for",
+		3: "Гордость за закрытый issue",
+		4: "Свобода от зависимости — как от legacy кода",
+	}
+
+	idx := min(currentDay/20, 4)
+	return Stats{
+		Days:        currentDay,
+		XP:          xp,
+		Level:       level,
+		CodingPower: clamp(10+currentDay*5, 0, 1000),
+		Streak:      currentDay,
+		Willpower:   states[idx],
+		MentalState: mentalMap[idx],
+		Mood:        moodMap[idx],
 	}
 }
 
-func drawPersonalGrowth() {
-	fmt.Printf("\n🌱 ЛИЧНЫЙ РОСТ:\n")
-	fmt.Printf("   🎮 Пропущено игр: %d сессий\n", growth.GamingSkipped)
-	fmt.Printf("   💻 Написано кода: %d строк\n", growth.CodeLines)
-	fmt.Printf("   📚 Часов обучения: %.1f\n", growth.StudyHours)
-	fmt.Printf("   🌍 Часов в реальной жизни: %d\n", growth.RealLifeHours)
-	fmt.Printf("   😌 Уверенность: %d/100 | 😨 Тревожность: %d/100\n",
-		growth.ConfidenceLevel, 100-growth.SocialEnergy)
-	fmt.Printf("   👵 Гордость мамы: %d/100 | 🆘 Дней без паники: %d\n",
-		growth.MomPrideLevel, growth.DaysWithoutPanic)
+// 💫 Рост личности через отказ от пагубных пристрастий
+func initGrowth() Growth {
+	cigs := currentDay * 15
+	beers := currentDay * 3
+	parties := currentDay
+
+	return Growth{
+		CigarettesSkipped:  cigs,
+		BeerBottlesSkipped: beers,
+		PartyNightsSkipped: parties,
+		StudyHours:         float64(currentDay) * 1.8,
+		// ✅ ИСПРАВЛЕНО: clamp → clampF для float64
+		Confidence: clampF(float64(currentDay)*1.5, 0, 100),     // Было clamp()
+		Anxiety:    clampF(100-float64(currentDay)*2.5, 0, 100), // Было clamp()
+		MomPride:   clamp(currentDay*2, 0, 100),                 // ✅ Остаётся clamp() для int
+		DaysClean:  currentDay,
+		MoneySaved: float64(cigs)*cigaretteCost + float64(beers)*beerBottleCost,
+	}
 }
 
-func drawAchievements() {
-	fmt.Printf("\n🏆 ДОСТИЖЕНИЯ: %d/%d разблокировано\n", unlockedAchvs, len(achievements))
+// 🎨 Карточка героя с драматизмом
+func printHeroCard() {
+	fmt.Printf("\n%s 100 ДНЕЙ КОДА VS 10 ЛЕТ ТУСОВОК %s\n",
+		strings.Repeat("🔥", 8), strings.Repeat("🔥", 8))
+	fmt.Println(strings.Repeat("═", 65))
+	fmt.Printf("👤 %sГоша%s | 37 лет | Бывший рэпер MC Fool\n",
+		color("1;33"), color("0")) // Жёлтый для акцента
+	fmt.Printf("🎯 Миссия: %sЗаменить угарные тусы в баре с пивом и сигаретами на Go-код%s\n",
+		color("1;32"), color("0")) // Зелёный для надежды
+	fmt.Printf("📅 %s | День %s%d/%d%s | Тема: Type Conversion\n",
+		time.Now().UTC().Format("02.01.2006"),
+		color("1;34"), currentDay, challengeDays, color("0")) // Синий для цифр
+}
+
+// 🔥 Прогресс с визуальной метафорой
+func printProgress() {
+	percent := float64(currentDay) / challengeDays * 100
+	fmt.Printf("\n%s🔥 ПРОГРЕСС ПЕРЕРОЖДЕНИЯ ИЗ СТЁБНОГО ФРИКА-ПОСМЕШИЩА В ТРЕЗВОГО ВОСТРЕБОВАННОГО АЙТИ-СПЕЦИАЛИСТА: %.0f%%%s\n",
+		color("1;35"), percent, color("0")) // Фиолетовый для заголовка
+	fmt.Println(progressBar(percent, 30))
+
+	xpNeeded := stats.Level * maxLevelXP
+	fmt.Printf("🏆 Lvl %d (%d/%d XP) | 💪 %s\n",
+		stats.Level, stats.XP, xpNeeded, stats.Willpower)
+	fmt.Printf("🧠 %s | 😌 %s\n", stats.MentalState, stats.Mood)
+	fmt.Printf("💻 Написано строк: %s%d%s | 🔥 Серия: %s%d дней%s\n",
+		color("1;36"), currentDay*50, color("0"),
+		color("1;33"), stats.Streak, color("0"))
+}
+
+// 🌅 Ежедневная жизнь с драматическими событиями
+func printDailyLife() {
+	fmt.Printf("\n%s🌅 УТРО БЕЗ ПОХМЕЛЬЯ:%s\n", color("1;32"), color("0"))
+	fmt.Printf("   👵 Мама: %s\"%s\"%s\n", color("1;33"), momQuote, color("0"))
+	fmt.Printf("   🧙 Ментор: %s\"%s\"%s %s\n",
+		color("1;34"), mentorQuote.Desc, color("0"), mentorQuote.Emoji)
+	fmt.Printf("   💫 Мотивация: %s%s%s\n",
+		color("1;35"), motivation, color("0"))
+	fmt.Printf("   🎲 Факт о Go: %s%s%s\n",
+		color("1;36"), dailyFact, color("0"))
+
+	fmt.Printf("\n%s⚡ СОБЫТИЯ ДНЯ (как в старых тусовках, но без похмелья):%s\n",
+		color("1;33"), color("0"))
+	for _, e := range events {
+		status := ""
+		switch e.Emoji {
+		case "🚨":
+			status = color("1;31") // Красный для опасности
+		case "🎉":
+			status = color("1;32") // Зелёный для победы
+		case "🧠":
+			status = color("1;34") // Синий для идей
+		}
+		fmt.Printf("   %s%s %s%s%s\n", status, e.Emoji, e.Desc, color("0"), status)
+	}
+}
+
+// 🌱 Рост с финансовой метрикой
+func printGrowth() {
+	fmt.Printf("\n%s🌱 ПЕРЕЗАГРУЗКА ЖИЗНИ:%s\n", color("1;32"), color("0"))
+	fmt.Printf("   🚭 Пропущено сигарет: %s%d%s (достаточно, чтобы %sзаполнить багажник такси%s)\n",
+		color("1;33"), growth.CigarettesSkipped, color("0"),
+		color("1;36"), color("0"))
+	fmt.Printf("   🍺 Пропущено пива: %s%d%s бутылок (весом с %sмаленького пони%s)\n",
+		color("1;33"), growth.BeerBottlesSkipped, color("0"),
+		color("1;36"), color("0"))
+	fmt.Printf("   💃 Пропущено вечеринок: %s%d%s ночей (спал как ребёнок %s%d раз%s)\n",
+		color("1;33"), growth.PartyNightsSkipped, color("0"),
+		color("1;36"), growth.DaysClean, color("0"))
+	fmt.Printf("   💰 Сэкономлено: %s%.0f ₽%s (хватит на %sноутбук для обучения%s)\n",
+		color("1;32"), growth.MoneySaved, color("0"),
+		color("1;36"), color("0"))
+	fmt.Printf("   📚 Часов обучения: %.1f | 😊 Уверенность: %.0f/100\n",
+		growth.StudyHours, growth.Confidence)
+	fmt.Printf("   👵 Гордость мамы: %d/100 | ✅ Дней без срыва: %d\n",
+		growth.MomPride, growth.DaysClean)
+}
+
+// 🧩 Уникальность нейротипичного мозга
+func printNeuroUniqueness() {
+	fmt.Printf("\n%s🧠 НЕЙРО-СУПЕРСИЛА СЕГОДНЯ:%s\n", color("1;34"), color("0"))
+	fmt.Printf("   %s→ %s%s\n", neuroQuirk.Emoji, neuroQuirk.Desc, color("0"))
+}
+
+// 🏆 Достижения с системой редкости
+func printAchievements() {
+	unlocked := countUnlocked(achievements)
+	fmt.Printf("\n%s🏆 ДОСТИЖЕНИЯ: %d/%d%s\n",
+		color("1;33"), unlocked, len(achievements), color("0"))
+
 	for _, a := range achievements {
-		if a.isUnlocked(currentDay) {
-			fmt.Printf("   %s %s: %s\n", getRarityEmoji(a.Type), a.Name, a.Description)
+		if currentDay >= a.Day {
+			rarityColor := map[string]string{
+				"common":    "1;37", // Белый
+				"uncommon":  "1;32", // Зелёный
+				"rare":      "1;34", // Синий
+				"epic":      "1;35", // Фиолетовый
+				"legendary": "1;33", // Жёлтый
+			}[a.Rarity]
+			fmt.Printf("   %s%s %s: %s%s\n",
+				color(rarityColor), a.Emoji, a.Name, a.Desc, color("0"))
 		}
 	}
 
-	fmt.Printf("\n📜 КВЕСТЫ: %d активно\n", activeQuests)
+	active := countActiveQuests()
+	fmt.Printf("\n%s📜 КВЕСТЫ: %d активно%s\n", color("1;36"), active, color("0"))
 	for _, q := range quests {
-		if q.isActive(currentDay) && !q.Completed {
-			fmt.Printf("   ➤ %s: %s\n", q.Name, q.Description)
+		if !q.Done && currentDay >= q.Day {
+			fmt.Printf("   ➤ %s%s: %s%s\n",
+				color("1;33"), q.Name, q.Desc, color("0"))
 		}
 	}
 }
 
-func drawFutureProspects() {
-	fmt.Printf("\n💰 ПЕРСПЕКТИВЫ:\n")
-	fmt.Printf("   💸 Текущая ЗП: ~%d руб/мес → %d руб/мес через %d дней\n",
-		80000+currentDay*500, 80000+100*1200, stats.DaysRemaining)
-	fmt.Printf("   🏡 Через %d дней: квартира у метро\n", max(0, 100-currentDay))
-	fmt.Printf("   👨‍👩‍👧 Через %d дней: семья гордится тобой\n", max(0, 80-currentDay))
+// 🌠 Будущее с цифровыми мечтами
+func printFuture() {
+	targetSalary := 250000
+	currentSalary := 80000 + currentDay*1700 // ✅ Реалистичный рост для Go-разработчика
+	daysToHouse := max(0, 60-currentDay)
+	daysToJob := max(0, 45-currentDay)
+	daysRemaining := challengeDays - currentDay // ✅ Явное вычисление оставшихся дней
+
+	fmt.Printf("\n%s💰 ЦИФРОВОЕ БУДУЩЕЕ:%s\n", color("1;35"), color("0"))
+	fmt.Printf("   💸 Зарплата: ~%s%d₽%s → %s%d₽/мес%s (через %d дней)\n",
+		color("1;33"), currentSalary, color("0"),
+		color("1;32"), targetSalary, color("0"),
+		daysRemaining) // ✅ ИСПРАВЛЕНО: stats.DaysRemaining → daysRemaining
+	fmt.Printf("   🏠 Мечта: квартира в новом районе у метро (через %s%d дней%s)\n",
+		color("1;34"), daysToHouse, color("0"))
+	fmt.Printf("   👨‍💻 Работа в Биг-Техе Go-Разработчиком (через %s%d дней%s)\n",
+		color("1;34"), daysToJob, color("0"))
 }
 
-func drawFooter() {
-	fmt.Println("\n══════════════════════════════════════════════")
-	fmt.Println("💡 ФИЛОСОФИЯ ДНЯ:")
-	fmt.Println("   \"Boolean — это не true/false. Это твой выбор: сдаваться или идти вперёд.\"")
-	fmt.Printf("   👵 Мама: \"Ну ладно, я вижу ты стараешься... может, через год купишь мне дачу?\"\n")
+// 💫 Философский финал
+func printFooter() {
+	fmt.Println(strings.Repeat("═", 65))
+	fmt.Printf("%s💡 ФИЛОСОФИЯ ДНЯ:%s\n", color("1;35"), color("0"))
+	fmt.Println("   \"Type Conversion в Go — как конвертация жизни:")
+	fmt.Println("   string(алкоголь) → float64(уверенность) → int(свобода)\"")
+	fmt.Printf("   👵 Мама: %s\"Если бросишь курить и читать рэп про тачки, тёлок и клубы...\n", color("1;33"))
+	fmt.Printf("            может, наконец-то станешь нормис-мужичком с семьёй и работой?\"%s\n", color("0"))
+	fmt.Printf("\n%s%s🌟 СЕГОДНЯ ТЫ ВЫБРАЛ КОД ВМЕСТО ТУСОВКИ В БАРЕ-КЛУБЕ🌟%s\n",
+		color("1;33"), strings.Repeat("✨", 5), color("0"))
 }
 
-func generateProgressBar(percent float64, width int) string {
+// 🛠️ Вспомогательные функции
+func progressBar(percent float64, width int) string {
 	filled := int(percent/100*float64(width) + 0.5)
-	empty := width - filled
+	bar := strings.Builder{}
+	bar.Grow(width + 10)
 
-	var bar strings.Builder
+	// Градиентный прогресс-бар
 	for i := 0; i < filled; i++ {
-		bar.WriteString("🟩")
+		switch {
+		case i < width/3:
+			bar.WriteString(color("31") + "█" + color("0")) // Красный → начало пути
+		case i < 2*width/3:
+			bar.WriteString(color("33") + "█" + color("0")) // Жёлтый → середина
+		default:
+			bar.WriteString(color("32") + "█" + color("0")) // Зелёный → близко к цели
+		}
 	}
-	for i := 0; i < empty; i++ {
-		bar.WriteString("⬜")
-	}
+	bar.WriteString(strings.Repeat("░", width-filled))
 	return bar.String()
 }
 
-func getEventEmoji(t string) string {
-	switch t {
-	case "obstacle":
-		return "🚧"
-	case "victory":
-		return "🎉"
-	case "challenge":
-		return "⚔️"
-	case "quest":
-		return "📜"
-	}
-	return "❓"
-}
-
-func getRarityEmoji(t string) string {
-	switch t {
-	case "common":
-		return "⚪"
-	case "rare":
-		return "🔵"
-	case "epic":
-		return "🟣"
-	case "legendary":
-		return "🟡"
-	}
-	return "❓"
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
-// 🧩 Сокращённые структуры данных
-type ChallengeStats struct {
-	DaysCompleted   int
-	DaysRemaining   int
-	ProgressPercent float64
-	Level           int
-	Experience      int
-	NextLevelXP     int
-	WillpowerLevel  string
-	MentalState     string
-	CurrentMood     string
-	CodingPower     int
-	Streak          int
-	MaxStreak       int
-}
-
-type PersonalGrowth struct {
-	GamingSkipped    int
-	StudyHours       float64
-	CodeLines        int
-	ConfidenceLevel  int
-	StressLevel      int
-	SocialEnergy     int
-	MomPrideLevel    int
-	RealLifeHours    int
-	DaysWithoutPanic int
-}
-
-type DailyEvent struct {
-	Type        string
-	Description string
-}
-
-type Achievement struct {
-	Name        string
-	Description string
-	Type        string
-	DayUnlock   int
-}
-
-func (a *Achievement) isUnlocked(day int) bool {
-	return day >= a.DayUnlock
-}
-
-type Quest struct {
-	Name        string
-	Description string
-	DayStart    int
-	Completed   bool
-}
-
-func (q *Quest) isActive(day int) bool {
-	return day >= q.DayStart && !q.Completed
-}
-
-type MentorAdvice struct {
-	Message string
-	Emoji   string
-}
-
-// 🎪 Данные челленджа
-var (
-	momQuotes = []string{
-		"Опять за компом? Соседский Коля уже вторую машину купил!",
-		"37 лет, а всё в компьютерные игры играешь!",
-		"Может, лучше бы пошёл и развёз пару заказов?",
-		"Когда уже станешь нормальным женатым мужичком?",
-		"Ну хоть бы жену нашёл, как все!",
+func generateEvents(n int) []Event {
+	obstacles := []string{
+		"Бывшие друзья зовут в бар: 'Гоша, погнали бухать с нами?'",
+		"Стресс от заказа — рука тянется к пачке, но ты открываешь VS Code",
+		"У бизнец-центра, куда отвозил документы стоят клерки и курят — запустил горутину отвлечения",
+		"Соседский шум как в клубе — включил white noise и погрузился в код",
 	}
 
-	obstacles = []string{
-		"Сосед сверлит стену во время изучения замыканий",
-		"Кошка прошлась по клавиатуре и закоммитила",
-		"Мама требует вынести мусор во время дебага",
-		"Интернет отключился в самый важный момент",
-		"СДВГ: начал изучать интерфейсы, переключился на каналы",
+	victories := []string{
+		"Выбросил пачку сигарет — купил книгу-учебник!",
+		"Отказался от баночки пива — написал функцию, которая работает с первого раза!",
+		"Тревога прошла после 45 минут кода — как медитация для СДВГ",
+		"Мама впервые сказала: 'Ты сегодня в ясном уме...' — резултат трезвости!",
 	}
 
-	victories = []string{
-		"Победил панику при виде error handling!",
-		"Написал первую горутину без deadlock!",
-		"Починил баг одним символом после 3 часов поиска!",
-		"Понял разницу между slice и array без гугления!",
-		"Рефакторинг прошёл успешно — ничего не сломал!",
+	ideas := []string{
+		"Идея: Написать Go-программу для отслеживания трезвости с нейросетью!",
+		"Мечта: Создать приложение для бывших тусовщиков, ищущих новую жизнь без вредных привычек",
+		"План: Завести репозиторий 'SoberDev' с открытым исходным кодом для всех",
+		"Прозрение: Моя зависимость — баг в коде жизни. Go — мой debugger",
 	}
 
-	goFacts = []string{
-		"Go создан тремя легендарными программистами: Роб Пайк, Кен Томпсон, Роберт Гризмер",
-		"Горутины легче потоков ОС — их могут быть миллионы!",
-		"Девиз Go: 'Do not communicate by sharing memory; instead, share memory by communicating'",
-		"Go может компилироваться в WebAssembly!",
-		"Go формат кода автоматически применяется через gofmt",
+	events := make([]Event, 0, n)
+	types := []struct {
+		emoji string
+		pool  []string
+	}{
+		{"🚨", obstacles},
+		{"🎉", victories},
+		{"🧠", ideas},
 	}
 
-	adviceList = []MentorAdvice{
-		{"Не бойся ошибок — они твои лучшие учителя", "📚"},
-		{"СДВГ — это не проклятие, а суперсила в программировании", "⚡"},
-		{"Каждая строка кода — это кирпичик в твою карьеру", "🧱"},
-		{"Ты сильнее своих зависимостей — докажи это!", "💪"},
-		{"ОКР помогает писать чистый, структурированный код", "🧼"},
-	}
-
-	motivations = []string{
-		"Каждая строка кода — это шаг от зависимости к свободе!",
-		"Сегодня ты стал на день ближе к карьере мечты!",
-		"СДВГ и ОКР — твои суперсилы в программировании!",
-		"Игры украли прошлое, Go вернёт будущее!",
-		"37 лет — идеальный возраст для перезагрузки!",
-	}
-
-	achievements = []Achievement{
-		{"Первый день", "Выжил после первого дня", "common", 1},
-		{"Неделя без срывов", "7 дней кода подряд", "common", 7},
-		{"Месяц без игр", "30 дней без игр", "rare", 30},
-		{"Полпути", "50 дней пройдено", "epic", 50},
-		{"Самурай кода", "100 дней без срывов", "legendary", 100},
-	}
-
-	quests = []Quest{
-		{"День 1", "Написать первую программу", 1, false},
-		{"День 10", "Создать структуру и методы", 10, false},
-		{"День 20", "Создать HTTP-сервер", 20, false},
-		{"День 30", "Написать тесты", 30, false},
-		{"День 50", "Создать CLI-инструмент", 50, false},
-		{"День 100", "Запустить проект в продакшн", 100, false},
-	}
-)
-
-// 🧮 Генераторы данных
-func generateDailyEvents(count int) []DailyEvent {
-	events := make([]DailyEvent, 0, count)
-	types := []string{"obstacle", "victory", "challenge", "quest"}
-
-	for i := 0; i < count; i++ {
-		t := types[rand.Intn(len(types))]
-		desc := ""
-
-		switch t {
-		case "obstacle":
-			desc = obstacles[rand.Intn(len(obstacles))]
-		case "victory":
-			desc = victories[rand.Intn(len(victories))]
-		case "challenge":
-			desc = "Вызов: " + []string{"Написать Hello World", "Создать функцию сложения", "Разобраться с указателями", "Написать тест"}[rand.Intn(4)]
-		case "quest":
-			desc = "Квест: " + []string{"Прочитать доку", "Написать 50 строк кода", "Создать репозиторий", "Написать README"}[rand.Intn(4)]
-		}
-
-		events = append(events, DailyEvent{t, desc})
+	for i := 0; i < n; i++ {
+		t := types[r.IntN(len(types))]
+		events = append(events, Event{
+			Emoji: t.emoji,
+			Desc:  randomItem(t.pool),
+		})
 	}
 	return events
 }
 
-// 🧠 Уровни и состояния
-func getWillpowerLevel(day int) string {
-	levels := []string{"Стеклянный", "Бумажный", "Картонный", "Деревянный", "Железный", "Стальной", "Алмазный"}
-	return levels[min(day/15, len(levels)-1)]
-}
-
-func getMentalState(day int) string {
-	states := []string{
-		"Паника и отрицание", "Гнев на компилятор", "Торг с собой",
-		"Депрессия от ошибок", "Принятие и просветление", "Поток и продуктивность",
+func getNeuroQuirk() Event {
+	quirks := []Event{
+		{"⚡", "СДВГ-гиперфокус: 4 часа кода как нон-стоп выступлени на сцене"},
+		{"🧩", "ОКР помогает писать идеально отформатированный код через gofmt"},
+		{"💡", "Социофобия: предпочитаю общение через GitHub Issues"},
+		{"🎯", "Нейротипичное мышление: вижу паттерны в данных как в ритмах"},
+		{"🛡️", "Эмоциональная перегрузка → 30 минут в терминале = free-терапия"},
 	}
-	return states[min(day/20, len(states)-1)]
+	return quirks[currentDay%len(quirks)]
 }
 
-func getCurrentMood(day int) string {
-	moods := []string{
-		"Ожидание старта", "Энтузиазм", "Формирование привычки",
-		"Стабильный прогресс", "Преодоление трудностей", "Уверенность",
-	}
-	return moods[min(day/17, len(moods)-1)]
-}
-
-func getDevLevel(day int) string {
-	levels := []string{
-		"Новичок 🐣", "Ученик 📚", "Интерн 🔧", "Junior 💻",
-		"Middle 🚀", "Senior 🏆", "Гуру 🧙", "Легенда 🌟",
-	}
-	return levels[min(day/15, len(levels)-1)]
-}
-
-// 🎲 Рандомайзеры
-func getRandomQuote(quotes []string) string {
-	return quotes[rand.Intn(len(quotes))]
-}
-
-func getRandomAdvice() MentorAdvice {
-	return adviceList[rand.Intn(len(adviceList))]
-}
-
-func getRandomFact() string {
-	return goFacts[rand.Intn(len(goFacts))]
-}
-
-func getDailyMotivation() string {
-	return motivations[rand.Intn(len(motivations))]
-}
-
-func countUnlockedAchievements() int {
+func countUnlocked(achs []Achievement) int {
 	count := 0
-	for _, a := range achievements {
-		if a.isUnlocked(currentDay) {
+	for _, a := range achs {
+		if currentDay >= a.Day {
 			count++
 		}
 	}
@@ -434,9 +412,163 @@ func countUnlockedAchievements() int {
 func countActiveQuests() int {
 	count := 0
 	for _, q := range quests {
-		if q.isActive(currentDay) {
+		if !q.Done && currentDay >= q.Day {
 			count++
 		}
 	}
 	return count
 }
+
+func randomItem[T any](items []T) T {
+	return items[r.IntN(len(items))]
+}
+
+func clamp(value, minVal, maxVal int) int {
+	if value < minVal {
+		return minVal
+	}
+	if value > maxVal {
+		return maxVal
+	}
+	return value
+}
+
+func clampF(value, minVal, maxVal float64) float64 {
+	if value < minVal {
+		return minVal
+	}
+	if value > maxVal {
+		return maxVal
+	}
+	return value
+}
+
+func color(code string) string {
+	return "\033[" + code + "m"
+}
+
+// 📊 Реальный подсчёт строк кода в директории дня
+func countGoLines(dirPath string) (int, error) {
+	totalLines := 0
+	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		// Считаем ТОЛЬКО .go файлы
+		if !info.IsDir() && strings.HasSuffix(path, ".go") {
+			file, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+
+			scanner := bufio.NewScanner(file)
+			lineCount := 0
+			for scanner.Scan() {
+				// Игнорируем пустые строки и комментарии (опционально)
+				line := strings.TrimSpace(scanner.Text())
+				if line != "" && !strings.HasPrefix(line, "//") {
+					lineCount++
+				}
+			}
+			if err := scanner.Err(); err != nil {
+				return err
+			}
+			totalLines += lineCount
+		}
+		return nil
+	})
+	return totalLines, err
+}
+
+// 🔍 Интерактивный подсчёт строк кода
+func interactiveLineCounter() {
+	fmt.Println("\n" + strings.Repeat("═", 65))
+	fmt.Printf("%s📊 ХОТИТЕ УЗНАТЬ РЕАЛЬНОЕ КОЛИЧЕСТВО СТРОК В ДРУГОМ ДНЕ?%s\n",
+		color("1;36"), color("0"))
+	fmt.Print("Введите день челленджа (например: day19): ")
+
+	var dayInput string
+	fmt.Scanln(&dayInput)
+
+	// Валидация формата
+	if !strings.HasPrefix(dayInput, "day") || len(dayInput) < 4 {
+		fmt.Printf("%s⚠️ Ошибка: используйте формат 'dayXX' (например, day19)%s\n",
+			color("1;31"), color("0"))
+		return
+	}
+
+	dirPath := fmt.Sprintf("../%s", dayInput)
+	lines, err := countGoLines(dirPath)
+
+	if err != nil {
+		// Обработка частых ошибок
+		if os.IsNotExist(err) {
+			fmt.Printf("%s📁 Директория %s не существует!%s\n",
+				color("1;33"), dayInput, color("0"))
+		} else {
+			fmt.Printf("%s❌ Ошибка при подсчёте: %v%s\n",
+				color("1;31"), err, color("0"))
+		}
+	} else {
+		// 🎉 Динамический вывод с эмодзи в зависимости от количества строк
+		emoji := "✅"
+		if lines > 100 {
+			emoji = "🔥"
+		} else if lines < 10 {
+			emoji = "😴"
+		}
+
+		fmt.Printf("%s%s В директории %s найдено %d программных строк кода%s\n",
+			color("1;32"), emoji, dayInput, lines, color("0"))
+
+		// 💡 Контекстный совет от ментора
+		if lines == 0 {
+			fmt.Printf("%s💡 Совет: Запустите 'git checkout %s' чтобы увидеть код этого дня%s\n",
+				color("1;34"), dayInput, color("0"))
+		} else if lines < 50 {
+			fmt.Printf("%s💡 Совет: Добавьте комментарии и рефакторинг для глубины изучения темы%s\n",
+				color("1;34"), color("0"))
+		} else {
+			fmt.Printf("%s💡 Совет: Вы молодец! %d строк — это серьёзный прогресс для одного дня!%s\n",
+				color("1;34"), lines, color("0"))
+		}
+	}
+}
+
+// 💬 Контент челленджа с душой
+var (
+	momQuotes = []string{
+		"37 лет, а вместо сцены, богатых продюсеров и дорогих тачек остались только вредные привычки",
+		"Соседский Вова уже третьего ребёнка нянчит, а ты всё за компом сидишь и дрочишь!",
+		"Купи мне дачу вместо того, чтобы тратить все деньги на доступных женщин, пиво и сигареты!",
+		"Лучше бы развозил заказы, чем тексты для 'новых хитов' на кухне писал!",
+		"Алкоголь залил твои извилины  — Go вернёт тебе ясность ума!",
+	}
+
+	mentorQuotes = []struct {
+		Emoji string
+		Desc  string
+	}{
+		{"🧠", "Твоя зависимость — не твоя личность. Каждая строка кода — шаг к свободе"},
+		{"🚭", "Сигарета крадёт 8 минут жизни. Go-функция дарит вечность в памяти"},
+		{"⚡", "СДВГ даёт гиперфокус — направь его в консоль вместо бара"},
+		{"❤️", "Ты не 'бывший неудачник'. Ты — будущий Senior-разработчик с уникальным взглядом"},
+	}
+
+	goFacts = []string{
+		"Go создан для решения реальных проблем — как твоя",
+		"В Go нет исключений — только возврат ошибок. Как в жизни: принимай ответственность",
+		"10k горутин легче, чем 1 пивная бутылка для печени",
+		"go fmt форматирует код автоматически — пусть и твоя жизнь станет упорядоченной",
+		"Go компилируется в один бинарник — как твоя новая жизнь: простая и надёжная",
+	}
+
+	motivations = []string{
+		"Каждый раз, когда хочешь закурить — напиши 5 строк кода вместо текста для трека!",
+		"Пиво даёт иллюзию радости. Go-код даёт настоящую — через pull request",
+		"Ты не теряешь друзей из тусовок. Ты обретаешь братьев-разработчиков в Slack",
+		"Твой потешный рэп-текст станет 'чистым Go-кодом' — без дублей и ошибок",
+		"37 лет — идеальный возраст для перезагрузки. Как хороший рефакторинг legacy кода",
+	}
+)
