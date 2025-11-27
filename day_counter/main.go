@@ -25,10 +25,10 @@ type (
 		Willpower, MentalState, Mood         string
 	}
 	Growth struct {
-		CigarettesSkipped, BeerBottlesSkipped, PartyNightsSkipped int
-		StudyHours, Confidence, Anxiety                           float64
-		MomPride, DaysClean, SquatsTotal, PullUpsTotal, StepsTotal int // ✅ ДОБАВЛЕНО: физическая активность
-		MoneySaved                                                float64 // 💰 Деньги, не потраченные в барах
+		CigarettesSkipped, BeerBottlesSkipped, PartyNightsSkipped  int
+		StudyHours, Confidence, Anxiety                            float64
+		MomPride, DaysClean, SquatsTotal, PullUpsTotal, StepsTotal int     // ✅ ДОБАВЛЕНО: физическая активность
+		MoneySaved                                                 float64 // 💰 Деньги, не потраченные в барах
 	}
 	Event       struct{ Emoji, Desc string }
 	Achievement struct {
@@ -90,7 +90,7 @@ func main() {
 }
 
 // 📚 Учебная тема дня (меняйте значение здесь!)
-var dailyTopic = "Zero Values" // ←←← ЗДЕСЬ ВВОДИТЕ ТЕКУЩУЮ ТЕМУ
+var dailyTopic = "const and iota" // ←←← ЗДЕСЬ ВВОДИТЕ ТЕКУЩУЮ ТЕМУ
 
 // 📅 Вывод сегодняшней даты и темы обучения
 func printDailyTopic() {
@@ -169,9 +169,9 @@ func initGrowth() Growth {
 	parties := currentDay
 
 	// ✅ РАСЧЁТ ФИЗИЧЕСКОЙ АКТИВНОСТИ:
-	squats := currentDay * 15      // 15 приседаний в день
-	pullUps := currentDay * 3      // 3 подтягивания в день
-	steps := currentDay * 5000     // 5000 шагов в день
+	squats := currentDay * 15  // 15 приседаний в день
+	pullUps := currentDay * 3  // 3 подтягивания в день
+	steps := currentDay * 5000 // 5000 шагов в день
 
 	return Growth{
 		CigarettesSkipped:  cigs,
