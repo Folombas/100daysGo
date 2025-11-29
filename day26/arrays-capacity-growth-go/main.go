@@ -10,7 +10,7 @@ import (
 const (
 	DREAM_JOB        = "Senior Golang Developer в Биг-Техе"
 	BIRTHDAY         = "30 ноября 2025" // Завтра!
-	INITIAL_CAPACITY = 3               // Начальная вместимость рюкзака
+	INITIAL_CAPACITY = 3                // Начальная вместимость рюкзака
 )
 
 func main() {
@@ -96,7 +96,7 @@ func eveningReflection(backpack []string) {
 	fmt.Printf("   💫 Максимальная вместимость достигнута: cap=%d\n", cap(backpack))
 
 	// Сравнение с прошлым
-	lastYearSameDay := 5 // заказов в прошлом году
+	lastYearSameDay := 5                             // заказов в прошлом году
 	growth := (len(backpack) - lastYearSameDay) * 20 // % роста
 	fmt.Printf("   📈 Рост эффективности: +%d%% (в прошлом году — %d заказов)\n", growth, lastYearSameDay)
 
@@ -127,7 +127,7 @@ func capacityPhilosophy() {
 	fmt.Println(`     с capacity = 10 (устойчивость к критике)`)
 	fmt.Println()
 	fmt.Println(`Моя мечта:`)
-	fmt.Println(`   Глобальный scope: DREAM_JOB = "Senior Go Developer в Яндексе"`)
+	fmt.Println(`   Глобальный scope: DREAM_JOB = "Senior Golang Developer в Биг-Техе"`)
 	fmt.Println(`   Локальный scope сегодня: length = 26, capacity = 100`)
 	fmt.Println(`   Завтра, в день рождения: length станет 27, но capacity останется 100`)
 	fmt.Println(`   А через 74 дня capacity моей жизни станет равной capacity моей мечты!`)
