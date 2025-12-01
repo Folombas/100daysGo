@@ -31,7 +31,7 @@ type (
 		AbandonedGames, AbandonedSeries                           int
 		MoneySaved                                                float64
 	}
-	Event struct{ Emoji, Desc string }
+	Event       struct{ Emoji, Desc string }
 	Achievement struct {
 		Emoji, Name, Desc string
 		Day               int
@@ -45,16 +45,16 @@ type (
 )
 
 var (
-	currentDay      = daysSince(startDateStr)
-	stats           = initStats()
-	growth          = initGrowth()
-	motivation      = randomItem(motivations)
-	dailyFact       = randomItem(goFacts)
-	neuroQuirk      = getNeuroQuirk()
-	achievements    = initAchievements()
-	quests          = initQuests()
-	r               = initRand()
-	dailyTopic      = "Slices: Growth" // Тема дня
+	currentDay   = daysSince(startDateStr)
+	stats        = initStats()
+	growth       = initGrowth()
+	motivation   = randomItem(motivations)
+	dailyFact    = randomItem(goFacts)
+	neuroQuirk   = getNeuroQuirk()
+	achievements = initAchievements()
+	quests       = initQuests()
+	r            = initRand()
+	dailyTopic   = "Slices: Growth" // Тема дня
 )
 
 func main() {
@@ -167,7 +167,7 @@ func todayMood() string {
 }
 
 func printHeroCard() {
-	fmt.Printf("\n🔥 100 ДНЕЙ КОДА VS 20 ЛЕТ ЦИФРОВОГО АДА 🔥\n")
+	fmt.Printf("\n100 ДНЕЙ КОДА VS 20 ЛЕТ УГАРНЫХ ТУСОВОК, ВРЕДНЫХ ПРИВЫЧЕК И ЦИФРОВЫХ ЗАВИСИМОСТЕЙ\n")
 	fmt.Println(strings.Repeat("═", 50))
 	fmt.Printf("👤 Гоша | 38 лет | Бывший гламурный рэпер MC Fool\n")
 	fmt.Printf("🎯 Миссия: %sСтать Go-разработчиком%s\n",
