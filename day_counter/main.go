@@ -54,7 +54,7 @@ var (
 	achievements = initAchievements()
 	quests       = initQuests()
 	r            = initRand()
-	dailyTopic   = "Slices: Growth" // Тема дня
+	dailyTopic   = "Slices: make()" // Тема дня
 )
 
 func main() {
