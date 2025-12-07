@@ -54,7 +54,7 @@ var (
 	achievements = initAchievements()
 	quests       = initQuests()
 	r            = initRand()
-	dailyTopic   = "Maps: Comma-Ok Idiom" // Тема дня
+	dailyTopic   = "Structs" // Тема дня
 )
 
 func main() {
