@@ -54,7 +54,7 @@ var (
 	achievements = initAchievements()
 	quests       = initQuests()
 	r            = initRand()
-	dailyTopic   = "Structs" // Тема дня
+	dailyTopic   = "Structs: Struct Tags & JSON" // Тема дня
 )
 
 func main() {
