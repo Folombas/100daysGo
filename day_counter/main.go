@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	startDateStr   = "2025-10-25"
-	challengeDays  = 100
-	maxLevelXP     = 1000
+	startDateStr  = "2025-10-25"
+	challengeDays = 100
+	maxLevelXP    = 1000
 )
 
 type Person struct {
@@ -35,10 +35,10 @@ type Achievement struct {
 }
 
 var (
-	gosha     = Person{"Гоша", 38, "Бывший рэпер-гламурщик", "Стать Go-разработчиком"}
+	gosha      = Person{"Гоша", 38, "Бывший рэпер-гламурщик", "Стать Go-разработчиком"}
 	currentDay = daysSince(startDateStr)
 	progress   = calculateProgress()
-	theme      = "Structs: Embedding Structs"
+	theme      = "Embedding Structs"
 	r          = rand.New(rand.NewPCG(uint64(time.Now().UnixNano()), uint64(time.Now().UnixNano()>>32)))
 )
 
@@ -182,7 +182,7 @@ func printFooter() {
 }
 
 func progressBar(percent float64, width int) string {
-	filled := int(percent/100*float64(width))
+	filled := int(percent / 100 * float64(width))
 	return strings.Repeat("█", filled) + strings.Repeat("░", width-filled)
 }
 
