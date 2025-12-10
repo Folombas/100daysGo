@@ -38,7 +38,7 @@ var (
 	gosha      = Person{"Гоша", 38, "Бывший рэпер-гламурщик", "Стать Go-разработчиком"}
 	currentDay = daysSince(startDateStr)
 	progress   = calculateProgress()
-	theme      = "Embedding Structs"
+	theme      = "Conditionals"
 	r          = rand.New(rand.NewPCG(uint64(time.Now().UnixNano()), uint64(time.Now().UnixNano()>>32)))
 )
 
