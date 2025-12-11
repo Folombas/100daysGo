@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	startDateStr  = "2025-10-25"
+	startDateStr  = "2025-11-03"
 	challengeDays = 100
 	maxLevelXP    = 1000
 )
