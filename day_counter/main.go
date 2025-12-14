@@ -65,7 +65,7 @@ func NewApp() *App {
 		},
 		currentDay: currentDay,
 		progress:   progress,
-		theme:      "Conditionals: switch",
+		theme:      "Functions",
 		prng:       rand.New(rand.NewSource(time.Now().UnixNano())),
 		motivations: []string{
 			"38 лет — идеальный возраст для старта в IT. Твой опыт жизни — твоя суперсила!",
