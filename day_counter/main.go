@@ -65,7 +65,7 @@ func NewApp() *App {
 		},
 		currentDay: currentDay,
 		progress:   progress,
-		theme:      "Functions: Variadic Functions",
+		theme:      "Functions: Multiple Return Values",
 		prng:       rand.New(rand.NewSource(time.Now().UnixNano())),
 		motivations: []string{
 			"38 лет — идеальный возраст для старта в IT. Твой опыт жизни — твоя суперсила!",
