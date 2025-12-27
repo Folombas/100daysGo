@@ -76,7 +76,7 @@ func simulateLegRest(painLevel *int) {
 		fmt.Printf("Боль: %d/100\n", *painLevel)
 		runtime.GC() // Принудительный сбор мусора
 	}
-	fmt.Printf("   ✅ %sGC освободил 65% боли!%s Ноги готовы к завтрашнему марафону.\n",
+	fmt.Printf("   ✅ %sGC освободил неприятную боль!%s Ноги готовы к завтрашнему марафону.\n",
 		ansi("1;32"), ansi("0"))
 }
 
