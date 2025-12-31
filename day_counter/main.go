@@ -65,7 +65,7 @@ func NewApp() *App {
 		},
 		currentDay: currentDay,
 		progress:   progress,
-		theme:      "Methods and Interfaces: Methods vs Functions",
+		theme:      "Methods and Interfaces: Pointer Receivers",
 		prng:       rand.New(rand.NewSource(time.Now().UnixNano())),
 		motivations: []string{
 			"20 лет назад ты носил коробки за 250₽. Сегодня — за те же 250₽. С учётом инфляции это в 4 РАЗА меньше реальной стоимости! В IT зарплата растёт с каждым проектом.",
