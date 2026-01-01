@@ -11,18 +11,13 @@ import (
 )
 
 const (
-	startDateStr     = "2025-11-03"
-	challengeDays    = 100
+	hundredDaysStart = "2025-11-03" // Начало 100daysGo
+	go365Start       = "2026-01-01" // Начало Go365
+	hundredDaysTotal = 100
+	go365TotalDays   = 365
 	maxLevelXP       = 1000
 	codeLinesPerDay  = 42.5
-	cigsPerDay       = 15
-	beerPerDay       = 3
-	studyHoursPerDay = 2.5
-	cigCost          = 15
-	beerCost         = 120
-	dailySavings     = 35
-	baseSalary       = 80000
-	salaryIncrease   = 1700
+	deletedGames     = 7 // Количество удалённых игр на старте 2026
 )
 
 type Person struct {
@@ -33,74 +28,81 @@ type Person struct {
 }
 
 type Progress struct {
-	Days, XP, Level, Streak, Confidence int
-	CodeLines                           float64
+	HundredDaysCount, HundredDaysXP, HundredDaysLevel int
+	Go365DaysCount, Go365XP, Go365Level               int
+	CodeLines                                         float64
 }
 
 type Achievement struct {
 	Emoji, Name, Desc string
-	Day               int
+	Unlocked          bool
 }
 
 type App struct {
 	gosha        Person
-	currentDay   int
+	currentDate  time.Time
 	progress     Progress
 	theme        string
 	prng         *rand.Rand
 	motivations  []string
-	facts        []string
 	achievements []Achievement
 }
 
 func NewApp() *App {
-	currentDay := daysSince(startDateStr)
-	progress := calculateProgress(currentDay)
+	now := time.Now()
+	hundredDays := daysSince(hundredDaysStart)
+	go365Days := daysSince(go365Start)
+	if go365Days < 0 {
+		go365Days = 0
+	}
+
 	return &App{
 		gosha: Person{
 			Name:       "Гоша",
 			Age:        38,
-			Background: "Курьер с 20-летним стажем (бывший рэпер)",
-			Goal:       "Стать Go-разработчиком и выйти из курьерского цикла",
+			Background: "Бывший игроман с опытом метаний между Python/Java/C#/C++/JS",
+			Goal:       "Стать Junior Go-разработчиком в 2026. Никаких переключений!",
 		},
-		currentDay: currentDay,
-		progress:   progress,
-		theme:      "Methods and Interfaces: Pointer Receivers",
-		prng:       rand.New(rand.NewSource(time.Now().UnixNano())),
+		currentDate: now,
+		progress: Progress{
+			HundredDaysCount: hundredDays,
+			HundredDaysXP:    min(hundredDays*10, hundredDaysTotal*10),
+			HundredDaysLevel: 1 + hundredDays*10/maxLevelXP,
+
+			Go365DaysCount: go365Days,
+			Go365XP:        go365Days * 15,
+			Go365Level:     1 + go365Days*15/maxLevelXP,
+
+			CodeLines: float64(hundredDays+go365Days) * codeLinesPerDay,
+		},
+		theme: "2026: Глубина вместо ширины. Только Go - Value Receivers",
+		prng:  rand.New(rand.NewSource(now.UnixNano())),
 		motivations: []string{
-			"20 лет назад ты носил коробки за 250₽. Сегодня — за те же 250₽. С учётом инфляции это в 4 РАЗА меньше реальной стоимости! В IT зарплата растёт с каждым проектом.",
-			"В курьерских приложениях опыт не ценится: новичок с iPhone 15 отхватит твой заказ за секунды. В IT твой опыт — это твоя защита и рост.",
-			"Летом — жара +40°C, зимой — сугробы -25°C, осенью — лужи по колено. А плата за доставку не меняется 15 лет. Программист же получает +30% к зарплате за каждую новую технологию!",
-			"Не бросай обучение! Каждый вечер кода — это шаг от холодных улиц к тёплому офису с кондиционером и зарплатой 250,000 ₽.",
-			"Курьерская работа: чем больше опыт — тем больше износ суставов. IT-работа: чем больше опыт — тем выше зарплата и свобода.",
-			"Твой рэп научил тебя ритму и структуре. Теперь примени это к коду — здесь опыт умножает твою ценность, а не разрушает тело.",
-			"Сегодня ты возишь чужие подарки. Через год будешь получать свой подарок — первую зарплату разработчика, где опыт = деньги.",
-		},
-		facts: []string{
-			"Карьерная лестница курьера: от 'бегущего по снегу' до 'бегущего по снегу с артритом'. В IT: Стажёр (80k) → Junior (150k) → Middle (250k) → Senior (400k) → Tech Lead (600k+)",
-			"В курьерских агрегаторах алгоритм даёт хорошие заказы тому, кто быстрее нажал кнопку. В IT алгоритм отбора — твоё резюме и GitHub.",
-			"Цена доставки не растёт с инфляцией. Зарплата разработчика растёт на 20-30% ежегодно. Твой опыт должен работать НА ТЕБЯ, а не против тебя!",
-			"1 горутина в Go = 1 поток выполнения. 1 вечер обучения = 1 шаг к карьере, где опыт = деньги, а не боль в суставах.",
-			"В IT ты конкурируешь со своим прошлым 'я'. В курьерке — с 20-летними подростками с айфончиками.",
-			"Go создан для решения реальных проблем. И твоя проблема — выбраться из курьерского цикла — самая реальная из всех.",
+			"Твой GTX 1060 больше не рендерит Unreal Engine — он компилирует твоё будущее в Go!",
+			"20 лет распыления закончились. Сегодня ты удалил 7 игр. Каждый день — ещё одна игра вместо кода.",
+			"В 2025 ты прыгал между Python и Java. В 2026 ты прыгаешь только по уровням в Go.",
+			"Гофер внутри тебя голоден. Накорми его строчками кода, а не FPS в играх.",
+			"Каждый коммит в Go365 — это кирпич в фундаменте твоей новой профессии.",
+			"Не 10 языков поверхностно. Не 10 движков. Только Go. Глубоко. Серьёзно. До победного.",
+			"Твой рэп научил тебя ритму. Теперь найди ритм в goroutines и channels.",
 		},
 		achievements: []Achievement{
-			{"🌱", "Новое начало!", "Первые 24 часа без иллюзий о курьерском будущем", 1},
-			{"⚔️", "Цифровой Гуру", "7 дней чистого кода вместо ожидания заказов", 7},
-			{"💎", "Сердце чемпиона", "Ты прошел четверть пути! 25 дней перемен!", 25},
-			{"🚀", "Наполовину к звёздам", "50 дней без оглядки назад — только вперёд!", 50},
-			{"🌟", "Полный круг", "100 дней нового Гоши — легенда в мире кода!", 100},
+			{"🔥", "Фокус-2026", "Первый день без игр и сериалов. Только Go.", false},
+			{"🚀", "Двойной челлендж", "100daysGo + Go365 = непрерывный рост", false},
+			{"🎯", "Хардкорный выбор", "Удалены Unity, IntelliJ, Unreal Engine. Только VS Code + Go", false},
+			{"🐍➡️🐹", "От Змеи к Гоферу", "Полный переход с Python на Go. Символично!", false},
+			{"💻", "GTX 1060 Upgrade", "Видеокарта теперь майнит знания, а не FPS", false},
 		},
 	}
 }
 
 func main() {
 	app := NewApp()
+	app.unlockAchievements()
 	app.printHeader()
 	app.printProgress()
 	app.printToday()
 	app.printStats()
-	app.printAchievements()
 	app.printFuture()
 	app.printFooter()
 	app.interactiveLineCounter()
@@ -114,153 +116,174 @@ func daysSince(dateStr string) int {
 	return int(time.Since(t).Hours() / 24)
 }
 
-func calculateProgress(days int) Progress {
-	xp := 100 + days*10
-	return Progress{
-		Days:       days,
-		XP:         xp,
-		Level:      1 + xp/maxLevelXP,
-		Streak:     days,
-		Confidence: min(100, days*2),
-		CodeLines:  float64(days) * codeLinesPerDay,
+func (a *App) unlockAchievements() {
+	// Автоматически разблокируем достижения на основе прогресса
+	if a.progress.Go365DaysCount >= 1 {
+		a.achievements[0].Unlocked = true // Фокус-2026
+	}
+	if a.progress.HundredDaysCount > 0 && a.progress.Go365DaysCount > 0 {
+		a.achievements[1].Unlocked = true // Двойной челлендж
+	}
+	if a.progress.Go365DaysCount >= 3 {
+		a.achievements[2].Unlocked = true // Хардкорный выбор
+	}
+	if a.progress.HundredDaysCount > 50 && a.progress.Go365DaysCount > 0 {
+		a.achievements[3].Unlocked = true // От Змеи к Гоферу
+	}
+	if deletedGames > 0 {
+		a.achievements[4].Unlocked = true // GTX 1060 Upgrade
 	}
 }
 
 func (a *App) printHeader() {
-	fmt.Printf("\n%s🔥 100 ДНЕЙ GО С ГОШЕЙ: ОТ КУРЬЕРСКИХ СУГРОБОВ К IT-ВЕРШИНАМ 🔥%s\n",
+	fmt.Printf("\n%s🔥 2026: ГОД ФОКУСА НА GO | 100daysGo + Go365 🔥%s\n",
 		ansi("1;33"), ansi("0"))
-	fmt.Println(strings.Repeat("═", 60))
+	fmt.Println(strings.Repeat("═", 70))
 	fmt.Printf("👤 %s%s%s | %d лет | %s\n",
 		ansi("1;36"), a.gosha.Name, ansi("0"), a.gosha.Age, a.gosha.Background)
 	fmt.Printf("🎯 %s%s%s\n",
 		ansi("1;32"), a.gosha.Goal, ansi("0"))
-	fmt.Printf("📅 %s | День: %d/%d | Тема: %s\n",
-		time.Now().Format("02.01.2006"), a.currentDay, challengeDays, a.theme)
+	fmt.Printf("📅 %s | 100daysGo: День %d/%d | Go365: День %d/%d\n",
+		a.currentDate.Format("02.01.2006"),
+		a.progress.HundredDaysCount, hundredDaysTotal,
+		a.progress.Go365DaysCount, go365TotalDays)
+	fmt.Printf("📚 Тема дня: %s%s%s\n", ansi("1;34"), a.theme, ansi("0"))
 }
 
 func (a *App) printProgress() {
-	percent := float64(a.currentDay) / challengeDays * 100
-	xpNeeded := a.progress.Level * maxLevelXP
+	hundredDaysPercent := float64(a.progress.HundredDaysCount) / hundredDaysTotal * 100
+	go365Percent := float64(a.progress.Go365DaysCount) / go365TotalDays * 100
 
-	fmt.Printf("\n%s🚀 ПРОГРЕСС: %.0f%% завершено (Дней с 30 ноября: %d)%s\n",
-		ansi("1;34"), percent, a.currentDay, ansi("0"))
-	fmt.Println(progressBar(percent, 40))
-	fmt.Printf("🏆 Уровень %d (%d/%d XP) | 💪 Уверенность: %d%%\n",
-		a.progress.Level, a.progress.XP, xpNeeded, a.progress.Confidence)
+	fmt.Printf("\n%s🚀 ПРОГРЕСС ЧЕЛЛЕНДЖЕЙ:%s\n", ansi("1;34"), ansi("0"))
+
+	// Прогресс 100daysGo
+	fmt.Printf("%s▸ 100daysGo:%s %.0f%% завершено | Уровень: %d | XP: %d/%d\n",
+		ansi("1;36"), ansi("0"),
+		hundredDaysPercent,
+		a.progress.HundredDaysLevel,
+		a.progress.HundredDaysXP,
+		hundredDaysTotal*10)
+	fmt.Println(progressBar(hundredDaysPercent, 50))
+
+	// Прогресс Go365
+	fmt.Printf("%s▸ Go365:%s %.1f%% завершено | Уровень: %d | XP: %d/%d\n",
+		ansi("1;32"), ansi("0"),
+		go365Percent,
+		a.progress.Go365Level,
+		a.progress.Go365XP,
+		go365TotalDays*15)
+	fmt.Println(progressBar(go365Percent, 50))
 }
 
 func (a *App) printToday() {
-	fmt.Printf("\n%s💡 СУТЬ ДНЯ: ПОЧЕМУ НЕЛЬЗЯ БРОСАТЬ САМООБУЧЕНИЕ%s\n", ansi("1;31"), ansi("0"))
-	fmt.Println("   ┌───────────────────────────────────────────────────────────────────────┐")
-	fmt.Println("   │ ❌ РЕАЛЬНОСТЬ КУРЬЕРА:                                               │")
-	fmt.Println("   │   - 2005 год: коробка за 250₽ (нормальная зарплата)                  │")
-	fmt.Println("   │   - 2025 год: та же коробка за 250₽ (с учётом инфляции = 60₽!)       │")
-	fmt.Println("   │   - Опыт не ценится: новичок на iPhone отхватит твой заказ за 3 сек  │")
-	fmt.Println("   │   - Лето: +40°C в асфальтовых джунглях                               │")
-	fmt.Println("   │   - Зима: -25°C по колено в сугробах                                 │")
-	fmt.Println("   │   - Осень: лужи до колен + мокрые ноги                               │")
-	fmt.Println("   │   - Нет карьерного роста: только износ тела                          │")
-	fmt.Println("   │                                                                      │")
-	fmt.Println("   │ ✅ IT-ПУТЬ:                                                          │")
-	fmt.Println("   │   - Стажёр (80,000 ₽) → Junior (150,000 ₽)                           │")
-	fmt.Println("   │   → Middle (250,000 ₽) → Senior (400,000 ₽)                          │")
-	fmt.Println("   │   → Tech Lead (600,000+ ₽)                                           │")
-	fmt.Println("   │   - Каждый новый язык/фреймворк = +20-30% к зарплате                 │")
-	fmt.Println("   │   - Опыт = деньги. Всегда. Даже в 38 лет.                            │")
-	fmt.Println("   └───────────────────────────────────────────────────────────────────────┘")
+	fmt.Printf("\n%s💡 СУТЬ 1 ЯНВАРЯ 2026:%s Почему фокус на Go — твой последний шанс%s\n",
+		ansi("1;31"), ansi("1;33"), ansi("0"))
+	fmt.Println("   ┌──────────────────────────────────────────────────────────────────────────────┐")
+	fmt.Println("   │ ❌ ПРОШЛОЕ (2023-2025):                                                      │")
+	fmt.Println("   │   - Январь 2025: Python (Год Змеи) → Май: Переключение на Go                 │")
+	fmt.Println("   │   - Unity (C#) → Unreal Engine (C++) → IntelliJ (Java) → VS Code (JS)        │")
+	fmt.Println("   │   - GTX 1060 тонула в лаве Unreal Engine 5, а не в компиляции Go             │")
+	fmt.Println("   │   - 10 лет распыления вместо глубины                                         │")
+	fmt.Println("   │                                                                              │")
+	fmt.Println("   │ ✅ НАСТОЯЩЕЕ (01.01.2026):                                                   │")
+	fmt.Println("   │   - 8:00 утра. Чай с вкусняшками. Новый день. Новый фокус.                   │")
+	fmt.Println("   │   - Все игры удалены. Свободное время → Go365                                │")
+	fmt.Println("   │   - Только один путь: от \"fmt.Println(hello)\" до Production-кода           │")
+	fmt.Println("   │   - Гофер — мой персонаж. Каждый день — прокачка уровня!                     │")
+	fmt.Println("   └──────────────────────────────────────────────────────────────────────────────┘")
 
-	fmt.Printf("\n%s✨ СЕГОДНЯ ГОВОРИТ СЕРДЦЕ:%s\n", ansi("1;35"), ansi("0"))
-	fmt.Printf("   💬 %s\n", a.motivations[a.currentDay%len(a.motivations)])
-	fmt.Printf("   💡 %s\n", a.facts[a.currentDay%len(a.facts)])
+	fmt.Printf("\n%s✨ МОТИВАЦИЯ ДНЯ:%s\n", ansi("1;35"), ansi("0"))
+	fmt.Printf("   💬 %s\n", a.motivations[a.currentDate.YearDay()%len(a.motivations)])
 }
 
 func (a *App) printStats() {
-	cigarettes := a.currentDay * cigsPerDay
-	beerBottles := a.currentDay * beerPerDay
-	studyHours := float64(a.currentDay) * studyHoursPerDay
-	moneySaved := float64(cigarettes)*cigCost + float64(beerBottles)*beerCost + float64(a.currentDay)*dailySavings
+	totalDays := a.progress.HundredDaysCount + a.progress.Go365DaysCount
+	learningHours := float64(totalDays) * 2.5
+	freedomHours := float64(deletedGames) * 3.0 // 3 часа на игру
 
-	fmt.Printf("\n%s📊 СТАТИСТИКА ПЕРЕРОЖДЕНИЯ:%s\n", ansi("1;36"), ansi("0"))
-	fmt.Printf("   🚭 Пропущено сигарет: %d | 🍺 Бутылок пива: %d\n", cigarettes, beerBottles)
-	fmt.Printf("   💻 Часов обучения: %.1f | 💰 Сэкономлено: %.0f ₽\n", studyHours, moneySaved)
-	fmt.Printf("   📝 Написано строк кода: %.0f | 🔥 Удалено игр: %d\n",
-		a.progress.CodeLines, 7+a.currentDay/5)
-	fmt.Printf("   📉 ПОТЕРИ ОТ КУРЬЕРКИ: %.0f ₽ (реальная стоимость 18 лет опыта)\n",
-		float64(a.currentDay)*250*4) // 250₽ за заказ * 4 раза из-за инфляции
+	fmt.Printf("\n%s📊 СТАТИСТИКА ПРЕВРАЩЕНИЯ:%s\n", ansi("1;36"), ansi("0"))
+	fmt.Printf("   🎮 Удалено игр: %d (освобождено %.1f часов/день)\n", deletedGames, freedomHours)
+	fmt.Printf("   💻 Написано строк кода: %.0f (100daysGo + Go365)\n", a.progress.CodeLines)
+	fmt.Printf("   ⏳ Часов на обучение: %.1f | Среднее: 2.5 часа/день\n", learningHours)
+	fmt.Printf("   📁 Репозиториев: 2 (100daysGo + Go365/Go1)\n")
+	fmt.Printf("   🚫 Заблокировано: Unity Hub, IntelliJ IDEA, Unreal Engine Launcher\n")
 }
 
 func (a *App) printAchievements() {
 	unlocked := 0
 	for _, ach := range a.achievements {
-		if a.currentDay >= ach.Day {
+		if ach.Unlocked {
 			unlocked++
 		}
 	}
 
 	fmt.Printf("\n%s🏆 ДОСТИЖЕНИЯ (%d/%d):%s\n", ansi("1;33"), unlocked, len(a.achievements), ansi("0"))
 	for _, ach := range a.achievements {
-		if a.currentDay >= ach.Day {
-			fmt.Printf("   %s%s %s%s\n", ansi("1;32"), ach.Emoji, ach.Name, ansi("0"))
+		status := "🔒"
+		style := ansi("1;37") // Серый для закрытых
+		if ach.Unlocked {
+			status = "✅"
+			style = ansi("1;32") // Зелёный для открытых
 		}
+		fmt.Printf("   %s%s %s: %s%s\n", style, status, ach.Name, ach.Desc, ansi("0"))
 	}
 }
 
 func (a *App) printFuture() {
-	currentSalary := baseSalary + a.currentDay*salaryIncrease
-	daysToJob := max(0, 45-a.currentDay)
-	courierSalary := 45000 // средняя зарплата курьера в Москве
+	// Расчёт зарплаты с учётом двух челленджей
+	baseSalary := 120000
+	salaryGrowth := 1800 * (a.progress.HundredDaysCount + a.progress.Go365DaysCount)
+	currentSalary := baseSalary + salaryGrowth
+	projectedSalary := 350000 // Прогноз через год
 
-	fmt.Printf("\n%s🔮 БУДУЩЕЕ ЧЕРЕЗ 100 ДНЕЙ:%s\n", ansi("1;35"), ansi("0"))
-	fmt.Printf("   💼 Go-разработчик в Биг-Техе (Текущая: %d ₽/мес → %s250,000 ₽/мес%s)\n",
-		currentSalary, ansi("1;32"), ansi("0"))
-	fmt.Printf("   📈 Карьера: Стажёр → Junior → Middle → Senior → Tech Lead\n")
-	fmt.Printf("   ⚖️ КОНТРАСТ: Курьер (%d ₽/мес) vs IT-разработчик (250,000 ₽/мес)\n",
-		courierSalary)
-	fmt.Printf("   ❄️ КОНЕЦ СЕЗОННОЙ БОРЬБЫ: Ни сугробов, ни луж, ни жары — только кондиционер и кофе\n")
-	fmt.Printf("   🏠 Своя квартира-студия в новом районе у метро (мечта с 30 ноября)\n")
-	fmt.Printf("   👵 Родители гордятся тобой (а не тем, как ты 'прославился' в прошлом)\n")
-	fmt.Printf("   ⏳ Работа найдется через %d дней. Ты справишься!\n", daysToJob)
+	fmt.Printf("\n%s🔮 БУДУЩЕЕ ПОСЛЕ 2026:%s\n", ansi("1;35"), ansi("0"))
+	fmt.Printf("   💼 Go-разработчик: %s%d ₽/мес → %d ₽/мес%s (через год)\n",
+		ansi("1;31"), currentSalary, projectedSalary, ansi("0"))
+	fmt.Printf("   📈 Карьера: Junior (сейчас) → Middle (июнь 2028) → Senior (декабрь 2029)\n")
+	fmt.Printf("   🏠 Свобода: Работа из любой точки мира. Больше нет сугробов и луж!\n")
+	fmt.Printf("   🎮 GTX 1060: Теперь греет не игровые сцены, а Docker-контейнеры с Go-кодом\n")
+	fmt.Printf("   ⏳ Финал 100daysGo: %d дней | Старт Go365: %d дней до Senior\n",
+		hundredDaysTotal-a.progress.HundredDaysCount,
+		go365TotalDays-a.progress.Go365DaysCount)
 }
 
 func (a *App) printFooter() {
-	fmt.Println(strings.Repeat("═", 60))
-	fmt.Printf("%s💬 ФИЛОСОФИЯ 38-ЛЕТНЕГО ГОШИ:%s\n", ansi("1;34"), ansi("0"))
-	fmt.Println("   \"Курьерство — это временная подработка. IT — это инвестиция в будущее.\"")
-	fmt.Println("   \"Твой 18-летний курьерский опыт не увеличит зарплату ни на копейку. Твой 1-летний опыт в Go — увеличит в 3 раза.\"")
-	fmt.Println("   \"Не обменивай сегодняшний голод на завтрашнюю бедность. Каждый вечер кода — это страховка от вечного бега по сугробам.\"")
+	fmt.Println(strings.Repeat("═", 70))
+	fmt.Printf("%s💬 КЛЯТВА ГОШИ НА 2026 ГОД:%s\n", ansi("1;34"), ansi("0"))
+	fmt.Println("   \"Больше никаких 'попробую C#' или 'вдруг Unity'!\"")
+	fmt.Println("   \"Каждый день — 1 коммит в Go365. Каждая строка — шаг к свободе.\"")
+	fmt.Println("   \"Мой Гофер сильнее всех боссов в играх. Его оружие — goroutines и channels.\"")
 
-	birthdayMessage := "\n%s🎉 НАПОМИНАНИЕ: 30 ноября 2025 года тебе исполнилось 38 лет. " +
-		"Это не поздно для старта в IT. Это идеальное время, чтобы превратить опыт жизни в преимущество!%s"
-	fmt.Printf(birthdayMessage, ansi("1;33"), ansi("0"))
+	fmt.Printf("\n%s🎉 01.01.2026: ИСТОРИЧЕСКИЙ ДЕНЬ%s\n", ansi("1;33"), ansi("0"))
+	fmt.Println("   - Утром: Удалены все игры с GTX 1060")
+	fmt.Println("   - Днём: Запущен челлендж Go365")
+	fmt.Println("   - Вечером: Написан первый коммит в Go365/Go1")
+	fmt.Printf("   - Итог: %sСФОКУСИРОВАН. СОБРАН. ГОТОВ%s\n", ansi("1;32"), ansi("0"))
 
-	fmt.Printf("\n%s🌟 СЕГОДНЯ: УДАЛИЛ 1 ИГРУ + НАПИСАЛ %.0f СТРОКИ КОДА! %s\n",
-		ansi("1;32"), a.progress.CodeLines, ansi("0"))
-	fmt.Printf("%s🔥 ЗАПОМНИ: %s\n", ansi("1;31"), ansi("0"))
-	fmt.Println("   'Ты устал от того, что цена за доставку не растёт 15 лет? ")
-	fmt.Println("   Зарплата разработчика растёт КАЖДЫЙ ГОД. Твой опыт = деньги. ")
-	fmt.Println("   Не бросай это — это твой единственный выход из цикла сугробов и луж!'")
-}
-
-func progressBar(percent float64, width int) string {
-	filled := int(percent/100*float64(width) + 0.5)
-	return strings.Repeat("█", filled) + strings.Repeat("░", width-filled)
+	fmt.Printf("\n%s🚀 СЛЕДУЮЩИЙ УРОВЕНЬ:%s\n", ansi("1;35"), ansi("0"))
+	fmt.Printf("   День 2 задача: Реализовать REST API для Go365-дневника")
 }
 
 func (a *App) interactiveLineCounter() {
-	fmt.Println("\n" + strings.Repeat("═", 60))
-	fmt.Print("🔍 Проверить прогресс за другой день (например: day25): ")
+	fmt.Println("\n" + strings.Repeat("═", 70))
+	fmt.Printf("%s🔍 Проверить прогресс:%s\n", ansi("1;36"), ansi("0"))
+	fmt.Println("   - Для 100daysGo: введите день (например: 25)")
+	fmt.Println("   - Для Go365: введите дату (например: 2026-01-01)")
+	fmt.Print("   Ваш выбор: ")
 
 	var input string
 	if _, err := fmt.Scanln(&input); err != nil {
 		return
 	}
 
-	if !strings.HasPrefix(input, "day") {
-		fmt.Printf("%s⚠️ Неправильный формат! Используй: day25%s\n", ansi("1;31"), ansi("0"))
-		return
+	var dirPath string
+	if strings.Contains(input, "-") {
+		// Go365 формат: 2026-01-01
+		dirPath = filepath.Join("..", "Go365", input)
+	} else {
+		// 100daysGo формат: day25
+		dirPath = filepath.Join("..", fmt.Sprintf("day%s", input))
 	}
-
-	dirPath := filepath.Join("..", input)
 
 	lines, err := countCodeLines(dirPath)
 	if err != nil {
@@ -276,20 +299,30 @@ func (a *App) interactiveLineCounter() {
 		emoji = "💪"
 	}
 
-	fmt.Printf("\n%s%s %s: %.0f строк кода!%s\n",
+	fmt.Printf("\n%s%s Прогресс за %s: %.0f строк кода!%s\n",
 		ansi("1;32"), emoji, input, lines, ansi("0"))
 
 	if lines > 0 {
-		fmt.Printf("%s💡 Совет: Добавь комментарии и рефакторинг!%s\n", ansi("1;34"), ansi("0"))
-		fmt.Printf("%s🚀 Напоминание:%s Каждая строка кода увеличивает твою ценность в IT. "+
-			"Курьерский опыт не накапливается. Продолжай писать!\n", ansi("1;35"), ansi("0"))
+		fmt.Printf("%s💡 Совет:%s Добавь тесты и документацию!%s\n",
+			ansi("1;34"), ansi("1;33"), ansi("0"))
+		fmt.Printf("%s🚀 Напоминание:%s В IT ценится глубина, а не количество языков. Продолжай!%s\n",
+			ansi("1;35"), ansi("1;36"), ansi("0"))
 	}
+}
+
+// --- Вспомогательные функции (без изменений) ---
+func progressBar(percent float64, width int) string {
+	filled := int(percent/100*float64(width) + 0.5)
+	return fmt.Sprintf("[%s%s] %.0f%%",
+		strings.Repeat("█", filled),
+		strings.Repeat("░", width-filled),
+		percent)
 }
 
 func countCodeLines(dir string) (float64, error) {
 	var total float64
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil || info.IsDir() || filepath.Ext(path) != ".go" {
+		if err != nil || info.IsDir() || (filepath.Ext(path) != ".go" && filepath.Ext(path) != ".md") {
 			return err
 		}
 
@@ -302,7 +335,7 @@ func countCodeLines(dir string) (float64, error) {
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
 			line := strings.TrimSpace(scanner.Text())
-			if line == "" || strings.HasPrefix(line, "//") {
+			if line == "" || strings.HasPrefix(line, "//") || strings.HasPrefix(line, "#") {
 				continue
 			}
 			total++
@@ -314,13 +347,6 @@ func countCodeLines(dir string) (float64, error) {
 
 func ansi(code string) string {
 	return "\033[" + code + "m"
-}
-
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
 }
 
 func min(a, b int) int {
