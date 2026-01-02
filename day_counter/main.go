@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,20 +11,18 @@ import (
 )
 
 const (
-	hundredDaysStart = "2025-11-03" // Начало 100daysGo
-	go365Start       = "2026-01-01" // Начало Go365
+	hundredDaysStart = "2025-11-03"
+	go365Start       = "2026-01-01"
 	hundredDaysTotal = 100
 	go365TotalDays   = 365
 	maxLevelXP       = 1000
 	codeLinesPerDay  = 42.5
-	deletedGames     = 7 // Количество удалённых игр на старте 2026
+	deletedGames     = 7
 )
 
 type Person struct {
-	Name       string
-	Age        int
-	Background string
-	Goal       string
+	Name, Background, Goal string
+	Age                    int
 }
 
 type Progress struct {
@@ -43,18 +41,17 @@ type App struct {
 	currentDate  time.Time
 	progress     Progress
 	theme        string
-	prng         *rand.Rand
+	rng          *rand.Rand
 	motivations  []string
 	achievements []Achievement
+	dailyThemes  []string
+	dailyEvents  []string
 }
 
 func NewApp() *App {
 	now := time.Now()
-	hundredDays := daysSince(hundredDaysStart)
-	go365Days := daysSince(go365Start)
-	if go365Days < 0 {
-		go365Days = 0
-	}
+	hundredDays := calculateDaysSince(hundredDaysStart)
+	go365Days := max(0, calculateDaysSince(go365Start))
 
 	return &App{
 		gosha: Person{
@@ -68,23 +65,22 @@ func NewApp() *App {
 			HundredDaysCount: hundredDays,
 			HundredDaysXP:    min(hundredDays*10, hundredDaysTotal*10),
 			HundredDaysLevel: 1 + hundredDays*10/maxLevelXP,
-
-			Go365DaysCount: go365Days,
-			Go365XP:        go365Days * 15,
-			Go365Level:     1 + go365Days*15/maxLevelXP,
-
-			CodeLines: float64(hundredDays+go365Days) * codeLinesPerDay,
+			Go365DaysCount:   go365Days,
+			Go365XP:          go365Days * 15,
+			Go365Level:       1 + go365Days*15/maxLevelXP,
+			CodeLines:        float64(hundredDays+go365Days) * codeLinesPerDay,
 		},
-		theme: "2026: Глубина вместо ширины. Только Go - Value Receivers",
-		prng:  rand.New(rand.NewSource(now.UnixNano())),
+		theme: "2026: Глубина вместо ширины. Только Go",
+		rng:   rand.New(rand.NewPCG(uint64(now.UnixNano()), uint64(now.Unix()))),
 		motivations: []string{
-			"Твой GTX 1060 больше не рендерит Unreal Engine — он компилирует твоё будущее в Go!",
-			"20 лет распыления закончились. Сегодня ты удалил 7 игр. Каждый день — ещё одна игра вместо кода.",
 			"В 2025 ты прыгал между Python и Java. В 2026 ты прыгаешь только по уровням в Go.",
+			"Каждая строчка кода на Go — шаг к новой профессии. Никаких отступлений!",
+			"Твой GTX 1060 больше не рендерит Unreal Engine — он компилирует твоё будущее в Go!",
 			"Гофер внутри тебя голоден. Накорми его строчками кода, а не FPS в играх.",
-			"Каждый коммит в Go365 — это кирпич в фундаменте твоей новой профессии.",
-			"Не 10 языков поверхностно. Не 10 движков. Только Go. Глубоко. Серьёзно. До победного.",
-			"Твой рэп научил тебя ритму. Теперь найди ритм в goroutines и channels.",
+			"Вчера ты был курьером. Сегодня ты — программист. Завтра — Go-разработчик.",
+			"Интерфейсы в Go — твои друзья. Они не спрашивают твоё имя, только методы.",
+			"Сборщик мусора убирает память. Ты убираешь сомнения. Доверяй runtime.",
+			"Методы определяют твою сущность. Функции — только действия. Ты — метод, Гоша.",
 		},
 		achievements: []Achievement{
 			{"🔥", "Фокус-2026", "Первый день без игр и сериалов. Только Go.", false},
@@ -93,180 +89,183 @@ func NewApp() *App {
 			{"🐍➡️🐹", "От Змеи к Гоферу", "Полный переход с Python на Go. Символично!", false},
 			{"💻", "GTX 1060 Upgrade", "Видеокарта теперь майнит знания, а не FPS", false},
 		},
+		dailyThemes: []string{
+			"Почему фокус на Go — твой последний шанс",
+			"Как Go спасёт тебя от распыления",
+			"Глубина вместо ширины: Путь к мастерству в Go",
+			"Почему только Go — ключ к твоему будущему",
+			"Как один язык превратит тебя в профессионала",
+			"Сборщик мусора в жизни: Убираем сомнения, как мусор в памяти",
+			"Интерфейсы — не только в Go, но и в жизни: Не важно, кто ты, важно, что ты можешь",
+		},
+		dailyEvents: []string{
+			"Утром: Удалил все игры с GTX 1060",
+			"Днём: Написал первый коммит в Go365",
+			"Вечером: Прошел 10к шагов по заснеженным улицам",
+			"Ночью: Написал Telegram-бота для учёта расходов",
+			"Вечером: Прочитал главу про interfaces в Effective Go",
+			"Утром: Запустил Go-сервер для учёта прогресса",
+			"Днём: Решил 5 задач на LeetCode на Go",
+			"Вечером: Написал свой первый middleware для Gin",
+			"Ночью: Изучил основы gRPC и написал простой сервис",
+		},
 	}
 }
 
 func main() {
 	app := NewApp()
 	app.unlockAchievements()
-	app.printHeader()
-	app.printProgress()
-	app.printToday()
-	app.printStats()
-	app.printFuture()
-	app.printFooter()
-	app.interactiveLineCounter()
+	app.renderUI()
 }
 
-func daysSince(dateStr string) int {
-	t, err := time.Parse("2006-01-02", dateStr)
-	if err != nil {
-		panic(fmt.Sprintf("invalid start date: %v", err))
-	}
-	return int(time.Since(t).Hours() / 24)
+func (a *App) renderUI() {
+	a.printHeader()
+	a.printProgressSection()
+	a.printDailyInsight()
+	a.printStatsSection()
+	a.printAchievementsSection()
+	a.printFutureSection()
+	a.printFooter()
+	a.interactiveCheck()
 }
 
-func (a *App) unlockAchievements() {
-	// Автоматически разблокируем достижения на основе прогресса
-	if a.progress.Go365DaysCount >= 1 {
-		a.achievements[0].Unlocked = true // Фокус-2026
-	}
-	if a.progress.HundredDaysCount > 0 && a.progress.Go365DaysCount > 0 {
-		a.achievements[1].Unlocked = true // Двойной челлендж
-	}
-	if a.progress.Go365DaysCount >= 3 {
-		a.achievements[2].Unlocked = true // Хардкорный выбор
-	}
-	if a.progress.HundredDaysCount > 50 && a.progress.Go365DaysCount > 0 {
-		a.achievements[3].Unlocked = true // От Змеи к Гоферу
-	}
-	if deletedGames > 0 {
-		a.achievements[4].Unlocked = true // GTX 1060 Upgrade
-	}
-}
+// --- СЕКЦИИ ИНТЕРФЕЙСА ---
 
 func (a *App) printHeader() {
-	fmt.Printf("\n%s🔥 2026: ГОД ФОКУСА НА GO | 100daysGo + Go365 🔥%s\n",
-		ansi("1;33"), ansi("0"))
-	fmt.Println(strings.Repeat("═", 70))
-	fmt.Printf("👤 %s%s%s | %d лет | %s\n",
-		ansi("1;36"), a.gosha.Name, ansi("0"), a.gosha.Age, a.gosha.Background)
-	fmt.Printf("🎯 %s%s%s\n",
-		ansi("1;32"), a.gosha.Goal, ansi("0"))
-	fmt.Printf("📅 %s | 100daysGo: День %d/%d | Go365: День %d/%d\n",
+	a.printTitle("🔥 2026: ГОД ФОКУСА НА GO | 100daysGo + Go365 🔥", "33")
+	a.printLine("═", 70)
+	a.printfColored("👤 %s | %d лет | %s\n", "36", a.gosha.Name, a.gosha.Age, a.gosha.Background)
+	a.printfColored("🎯 %s\n", "32", a.gosha.Goal)
+	a.printf("📅 %s | 100daysGo: День %d/%d | Go365: День %d/%d\n",
 		a.currentDate.Format("02.01.2006"),
 		a.progress.HundredDaysCount, hundredDaysTotal,
 		a.progress.Go365DaysCount, go365TotalDays)
-	fmt.Printf("📚 Тема дня: %s%s%s\n", ansi("1;34"), a.theme, ansi("0"))
+	a.printfColored("📚 Тема дня: %s\n", "34", a.theme)
 }
 
-func (a *App) printProgress() {
-	hundredDaysPercent := float64(a.progress.HundredDaysCount) / hundredDaysTotal * 100
-	go365Percent := float64(a.progress.Go365DaysCount) / go365TotalDays * 100
+func (a *App) printProgressSection() {
+	a.printSectionHeader("🚀 ПРОГРЕСС ЧЕЛЛЕНДЖЕЙ", "34")
 
-	fmt.Printf("\n%s🚀 ПРОГРЕСС ЧЕЛЛЕНДЖЕЙ:%s\n", ansi("1;34"), ansi("0"))
+	hundredDaysPercent := a.progress.HundredDaysCount * 100 / hundredDaysTotal
+	go365Percent := a.progress.Go365DaysCount * 100 / go365TotalDays
 
-	// Прогресс 100daysGo
-	fmt.Printf("%s▸ 100daysGo:%s %.0f%% завершено | Уровень: %d | XP: %d/%d\n",
-		ansi("1;36"), ansi("0"),
-		hundredDaysPercent,
+	a.printfColored("▸ 100daysGo: %.0f%% завершено | Уровень: %d | XP: %d/%d\n", "36",
+		float64(hundredDaysPercent),
 		a.progress.HundredDaysLevel,
 		a.progress.HundredDaysXP,
 		hundredDaysTotal*10)
-	fmt.Println(progressBar(hundredDaysPercent, 50))
+	a.printProgressBar(hundredDaysPercent)
 
-	// Прогресс Go365
-	fmt.Printf("%s▸ Go365:%s %.1f%% завершено | Уровень: %d | XP: %d/%d\n",
-		ansi("1;32"), ansi("0"),
-		go365Percent,
+	a.printfColored("▸ Go365: %.1f%% завершено | Уровень: %d | XP: %d/%d\n", "32",
+		float64(go365Percent),
 		a.progress.Go365Level,
 		a.progress.Go365XP,
 		go365TotalDays*15)
-	fmt.Println(progressBar(go365Percent, 50))
+	a.printProgressBar(go365Percent)
 }
 
-func (a *App) printToday() {
-	fmt.Printf("\n%s💡 СУТЬ 1 ЯНВАРЯ 2026:%s Почему фокус на Go — твой последний шанс%s\n",
-		ansi("1;31"), ansi("1;33"), ansi("0"))
-	fmt.Println("   ┌──────────────────────────────────────────────────────────────────────────────┐")
-	fmt.Println("   │ ❌ ПРОШЛОЕ (2023-2025):                                                      │")
-	fmt.Println("   │   - Январь 2025: Python (Год Змеи) → Май: Переключение на Go                 │")
-	fmt.Println("   │   - Unity (C#) → Unreal Engine (C++) → IntelliJ (Java) → VS Code (JS)        │")
-	fmt.Println("   │   - GTX 1060 тонула в лаве Unreal Engine 5, а не в компиляции Go             │")
-	fmt.Println("   │   - 10 лет распыления вместо глубины                                         │")
-	fmt.Println("   │                                                                              │")
-	fmt.Println("   │ ✅ НАСТОЯЩЕЕ (01.01.2026):                                                   │")
-	fmt.Println("   │   - 8:00 утра. Чай с вкусняшками. Новый день. Новый фокус.                   │")
-	fmt.Println("   │   - Все игры удалены. Свободное время → Go365                                │")
-	fmt.Println("   │   - Только один путь: от \"fmt.Println(hello)\" до Production-кода           │")
-	fmt.Println("   │   - Гофер — мой персонаж. Каждый день — прокачка уровня!                     │")
-	fmt.Println("   └──────────────────────────────────────────────────────────────────────────────┘")
+func (a *App) printDailyInsight() {
+	// Формат даты: "02 ЯНВАРЯ 2026"
+	monthNames := []string{"ЯНВАРЯ", "ФЕВРАЛЯ", "МАРТА", "АПРЕЛЯ", "МАЯ", "ИЮНЯ",
+		"ИЮЛЯ", "АВГУСТА", "СЕНТЯБРЯ", "ОКТЯБРЯ", "НОЯБРЯ", "ДЕКАБРЯ"}
+	dateLabel := fmt.Sprintf("%02d %s %d",
+		a.currentDate.Day(),
+		monthNames[a.currentDate.Month()-1],
+		a.currentDate.Year())
 
-	fmt.Printf("\n%s✨ МОТИВАЦИЯ ДНЯ:%s\n", ansi("1;35"), ansi("0"))
-	fmt.Printf("   💬 %s\n", a.motivations[a.currentDate.YearDay()%len(a.motivations)])
+	theme := a.getRandomItem(a.dailyThemes)
+	motivation := a.getRandomItem(a.motivations)
+	events := a.getRandomItems(a.dailyEvents, a.rng.IntN(3)+1)
+
+	a.printSectionHeader(fmt.Sprintf("💡 СУТЬ %s: %s", dateLabel, theme), "31;1")
+	a.printBlock(56, func() {
+		a.printf("❌ ПРОШЛОЕ (2023-2025):\n")
+		a.printBullet("Январь 2025: Python (Год Змеи) → Май: Переключение на Go")
+		a.printBullet("Unity (C#) → Unreal Engine (C++) → IntelliJ (Java) → VS Code (JS)")
+		a.printBullet("GTX 1060 тонула в лаве Unreal Engine 5, а не в компиляции Go")
+		a.printBullet("10 лет распыления вместо глубины")
+
+		a.printf("\n✅ НАСТОЯЩЕЕ (%s):\n", a.currentDate.Format("02.01.2006"))
+		for _, event := range events {
+			a.printBullet(event)
+		}
+	})
+
+	a.printSectionHeader("✨ МОТИВАЦИЯ ДНЯ", "35")
+	a.printf("💬 %s\n", motivation)
 }
 
-func (a *App) printStats() {
+func (a *App) printStatsSection() {
 	totalDays := a.progress.HundredDaysCount + a.progress.Go365DaysCount
 	learningHours := float64(totalDays) * 2.5
-	freedomHours := float64(deletedGames) * 3.0 // 3 часа на игру
+	freedomHours := float64(deletedGames) * 3.0
 
-	fmt.Printf("\n%s📊 СТАТИСТИКА ПРЕВРАЩЕНИЯ:%s\n", ansi("1;36"), ansi("0"))
-	fmt.Printf("   🎮 Удалено игр: %d (освобождено %.1f часов/день)\n", deletedGames, freedomHours)
-	fmt.Printf("   💻 Написано строк кода: %.0f (100daysGo + Go365)\n", a.progress.CodeLines)
-	fmt.Printf("   ⏳ Часов на обучение: %.1f | Среднее: 2.5 часа/день\n", learningHours)
-	fmt.Printf("   📁 Репозиториев: 2 (100daysGo + Go365/Go1)\n")
-	fmt.Printf("   🚫 Заблокировано: Unity Hub, IntelliJ IDEA, Unreal Engine Launcher\n")
+	a.printSectionHeader("📊 СТАТИСТИКА ПРЕВРАЩЕНИЯ", "36")
+	a.printBullet(fmt.Sprintf("Удалено игр: %d (освобождено %.1f часов/день)", deletedGames, freedomHours))
+	a.printBullet(fmt.Sprintf("Написано строк кода: %.0f (100daysGo + Go365)", a.progress.CodeLines))
+	a.printBullet(fmt.Sprintf("Часов на обучение: %.1f | Среднее: 2.5 часа/день", learningHours))
+	a.printBullet("Репозиториев: 2 (100daysGo + Go365/Go1)")
+	a.printBullet("Заблокировано: Unity Hub, IntelliJ IDEA, Unreal Engine Launcher")
 }
 
-func (a *App) printAchievements() {
-	unlocked := 0
-	for _, ach := range a.achievements {
-		if ach.Unlocked {
-			unlocked++
-		}
-	}
+func (a *App) printAchievementsSection() {
+	unlocked := countUnlocked(a.achievements)
+	a.printSectionHeader(fmt.Sprintf("🏆 ДОСТИЖЕНИЯ (%d/%d)", unlocked, len(a.achievements)), "33")
 
-	fmt.Printf("\n%s🏆 ДОСТИЖЕНИЯ (%d/%d):%s\n", ansi("1;33"), unlocked, len(a.achievements), ansi("0"))
 	for _, ach := range a.achievements {
 		status := "🔒"
-		style := ansi("1;37") // Серый для закрытых
+		color := "37" // Серый
 		if ach.Unlocked {
 			status = "✅"
-			style = ansi("1;32") // Зелёный для открытых
+			color = "32" // Зеленый
 		}
-		fmt.Printf("   %s%s %s: %s%s\n", style, status, ach.Name, ach.Desc, ansi("0"))
+		a.printfColored("   %s %s: %s\n", color, status, ach.Name, ach.Desc)
 	}
 }
 
-func (a *App) printFuture() {
-	// Расчёт зарплаты с учётом двух челленджей
-	baseSalary := 120000
-	salaryGrowth := 1800 * (a.progress.HundredDaysCount + a.progress.Go365DaysCount)
-	currentSalary := baseSalary + salaryGrowth
-	projectedSalary := 350000 // Прогноз через год
+func (a *App) printFutureSection() {
+	currentSalary := 120000 + 1800*(a.progress.HundredDaysCount+a.progress.Go365DaysCount)
 
-	fmt.Printf("\n%s🔮 БУДУЩЕЕ ПОСЛЕ 2026:%s\n", ansi("1;35"), ansi("0"))
-	fmt.Printf("   💼 Go-разработчик: %s%d ₽/мес → %d ₽/мес%s (через год)\n",
-		ansi("1;31"), currentSalary, projectedSalary, ansi("0"))
-	fmt.Printf("   📈 Карьера: Junior (сейчас) → Middle (июнь 2028) → Senior (декабрь 2029)\n")
-	fmt.Printf("   🏠 Свобода: Работа из любой точки мира. Больше нет сугробов и луж!\n")
-	fmt.Printf("   🎮 GTX 1060: Теперь греет не игровые сцены, а Docker-контейнеры с Go-кодом\n")
-	fmt.Printf("   ⏳ Финал 100daysGo: %d дней | Старт Go365: %d дней до Senior\n",
+	a.printSectionHeader("🔮 БУДУЩЕЕ ПОСЛЕ 2026", "35")
+	a.printf("💼 Go-разработчик: %s%d ₽/мес → %d ₽/мес%s (через год)\n",
+		ansi("31;1"), currentSalary, 350000, ansi("0"))
+	a.printBullet("Карьера: Junior (сейчас) → Middle (июнь 2028) → Senior (декабрь 2029)")
+	a.printBullet("Свобода: Работа из любой точки мира. Больше нет сугробов и луж!")
+	a.printBullet("GTX 1060: Теперь греет Docker-контейнеры с Go-кодом")
+	a.printBullet(fmt.Sprintf("Финал 100daysGo: %d дней | До Senior: %d дней",
 		hundredDaysTotal-a.progress.HundredDaysCount,
-		go365TotalDays-a.progress.Go365DaysCount)
+		go365TotalDays-a.progress.Go365DaysCount))
 }
 
 func (a *App) printFooter() {
-	fmt.Println(strings.Repeat("═", 70))
-	fmt.Printf("%s💬 КЛЯТВА ГОШИ НА 2026 ГОД:%s\n", ansi("1;34"), ansi("0"))
-	fmt.Println("   \"Больше никаких 'попробую C#' или 'вдруг Unity'!\"")
-	fmt.Println("   \"Каждый день — 1 коммит в Go365. Каждая строка — шаг к свободе.\"")
-	fmt.Println("   \"Мой Гофер сильнее всех боссов в играх. Его оружие — goroutines и channels.\"")
+	a.printLine("═", 70)
+	a.printSectionHeader("💬 АЙТИ-НАСТРОЙ ГОШИ НА 2026 ГОД", "34")
+	a.printBullet("Больше никаких 'попробую C#' или 'вдруг Unity'!")
+	a.printBullet("Каждый день — 1 коммит в Go365. Каждая строка — шаг к свободе.")
+	a.printBullet("Мой Гофер сильнее всех боссов в играх. Его оружие — goroutines и channels.")
 
-	fmt.Printf("\n%s🎉 01.01.2026: ИСТОРИЧЕСКИЙ ДЕНЬ%s\n", ansi("1;33"), ansi("0"))
-	fmt.Println("   - Утром: Удалены все игры с GTX 1060")
-	fmt.Println("   - Днём: Запущен челлендж Go365")
-	fmt.Println("   - Вечером: Написан первый коммит в Go365/Go1")
-	fmt.Printf("   - Итог: %sСФОКУСИРОВАН. СОБРАН. ГОТОВ%s\n", ansi("1;32"), ansi("0"))
-
-	fmt.Printf("\n%s🚀 СЛЕДУЮЩИЙ УРОВЕНЬ:%s\n", ansi("1;35"), ansi("0"))
-	fmt.Printf("   День 2 задача: Реализовать REST API для Go365-дневника")
+	a.printSectionHeader(fmt.Sprintf("🎉 %s: ПРОГРАММИСТСКИЙ ДЕНЬ", a.currentDate.Format("02.01.2006")), "33")
+	for _, event := range a.getRandomItems(a.dailyEvents, 3) {
+		a.printBullet(event)
+	}
+	a.printf("\n%s🚀 ПОМНИ: В IT ценится глубина, а не количество языков. Продолжай копать!%s\n",
+		ansi("35;1"), ansi("0"))
 }
 
-func (a *App) interactiveLineCounter() {
-	fmt.Println("\n" + strings.Repeat("═", 70))
-	fmt.Printf("%s🔍 Проверить прогресс:%s\n", ansi("1;36"), ansi("0"))
+// --- ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ---
+
+func (a *App) unlockAchievements() {
+	a.achievements[0].Unlocked = a.progress.Go365DaysCount >= 1
+	a.achievements[1].Unlocked = a.progress.HundredDaysCount > 0 && a.progress.Go365DaysCount > 0
+	a.achievements[2].Unlocked = a.progress.Go365DaysCount >= 3
+	a.achievements[3].Unlocked = a.progress.HundredDaysCount > 50 && a.progress.Go365DaysCount > 0
+	a.achievements[4].Unlocked = deletedGames > 0
+}
+
+func (a *App) interactiveCheck() {
+	a.printLine("═", 70)
+	a.printSectionHeader("🔍 Проверить прогресс", "36")
+
 	fmt.Println("   - Для 100daysGo: введите день (например: 25)")
 	fmt.Println("   - Для Go365: введите дату (например: 2026-01-01)")
 	fmt.Print("   Ваш выбор: ")
@@ -276,53 +275,72 @@ func (a *App) interactiveLineCounter() {
 		return
 	}
 
-	var dirPath string
-	if strings.Contains(input, "-") {
-		// Go365 формат: 2026-01-01
-		dirPath = filepath.Join("..", "Go365", input)
-	} else {
-		// 100daysGo формат: day25
-		dirPath = filepath.Join("..", fmt.Sprintf("day%s", input))
-	}
-
+	dirPath := a.getProgressPath(input)
 	lines, err := countCodeLines(dirPath)
 	if err != nil {
-		fmt.Printf("%s❌ Ошибка: %v%s\n", ansi("1;31"), err, ansi("0"))
+		a.printfColored("❌ Ошибка: %v\n", "31", err)
 		return
 	}
 
 	emoji := "✅"
-	switch {
-	case lines > 100:
+	if lines > 100 {
 		emoji = "🔥"
-	case lines < 10:
+	} else if lines < 10 {
 		emoji = "💪"
 	}
 
-	fmt.Printf("\n%s%s Прогресс за %s: %.0f строк кода!%s\n",
-		ansi("1;32"), emoji, input, lines, ansi("0"))
-
+	a.printfColored("\n%s Прогресс за %s: %.0f строк кода!\n", "32;1", emoji, input, lines)
 	if lines > 0 {
-		fmt.Printf("%s💡 Совет:%s Добавь тесты и документацию!%s\n",
-			ansi("1;34"), ansi("1;33"), ansi("0"))
-		fmt.Printf("%s🚀 Напоминание:%s В IT ценится глубина, а не количество языков. Продолжай!%s\n",
-			ansi("1;35"), ansi("1;36"), ansi("0"))
+		a.printfColored("💡 Совет: Добавь тесты и документацию!\n", "34;1")
 	}
 }
 
-// --- Вспомогательные функции (без изменений) ---
-func progressBar(percent float64, width int) string {
-	filled := int(percent/100*float64(width) + 0.5)
-	return fmt.Sprintf("[%s%s] %.0f%%",
-		strings.Repeat("█", filled),
-		strings.Repeat("░", width-filled),
-		percent)
+func (a *App) getProgressPath(input string) string {
+	if strings.Contains(input, "-") {
+		return filepath.Join("..", "Go365", input)
+	}
+	return filepath.Join("..", fmt.Sprintf("day%s", input))
+}
+
+// --- УНИВЕРСАЛЬНЫЕ УТИЛИТЫ ---
+
+func (a *App) getRandomItem(items []string) string {
+	return items[a.rng.IntN(len(items))]
+}
+
+func (a *App) getRandomItems(items []string, count int) []string {
+	result := make([]string, 0, count)
+	used := make(map[int]bool)
+
+	for len(result) < count && len(result) < len(items) {
+		idx := a.rng.IntN(len(items))
+		if !used[idx] {
+			used[idx] = true
+			result = append(result, items[idx])
+		}
+	}
+	return result
+}
+
+func countUnlocked(achievements []Achievement) int {
+	count := 0
+	for _, a := range achievements {
+		if a.Unlocked {
+			count++
+		}
+	}
+	return count
+}
+
+func calculateDaysSince(dateStr string) int {
+	t, _ := time.Parse("2006-01-02", dateStr)
+	return int(time.Since(t).Hours() / 24)
 }
 
 func countCodeLines(dir string) (float64, error) {
 	var total float64
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil || info.IsDir() || (filepath.Ext(path) != ".go" && filepath.Ext(path) != ".md") {
+		if err != nil || info.IsDir() || !isCodeFile(path) {
 			return err
 		}
 
@@ -335,14 +353,59 @@ func countCodeLines(dir string) (float64, error) {
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
 			line := strings.TrimSpace(scanner.Text())
-			if line == "" || strings.HasPrefix(line, "//") || strings.HasPrefix(line, "#") {
-				continue
+			if line != "" && !strings.HasPrefix(line, "//") && !strings.HasPrefix(line, "#") {
+				total++
 			}
-			total++
 		}
 		return scanner.Err()
 	})
 	return total, err
+}
+
+func isCodeFile(path string) bool {
+	ext := filepath.Ext(path)
+	return ext == ".go" || ext == ".md"
+}
+
+// --- ФОРМАТТЕРЫ И ЦВЕТА ---
+
+func (a *App) printTitle(text, color string) {
+	fmt.Printf("%s%s%s\n", ansi(color+";1"), text, ansi("0"))
+}
+
+func (a *App) printSectionHeader(text, color string) {
+	fmt.Printf("\n%s%s%s\n", ansi(color+";1"), text, ansi("0"))
+}
+
+func (a *App) printLine(char string, count int) {
+	fmt.Println(strings.Repeat(char, count))
+}
+
+func (a *App) printf(format string, args ...any) {
+	fmt.Printf(format, args...)
+}
+
+func (a *App) printfColored(format, color string, args ...any) {
+	fmt.Printf("%s"+format+"%s", append([]any{ansi(color)}, append(args, ansi("0"))...)...)
+}
+
+func (a *App) printBlock(width int, content func()) {
+	fmt.Println("   ┌" + strings.Repeat("─", width) + "┐")
+	content()
+	fmt.Println("   └" + strings.Repeat("─", width) + "┘")
+}
+
+func (a *App) printBullet(text string) {
+	fmt.Printf("   │   - %s\n", text)
+}
+
+func (a *App) printProgressBar(percent int) {
+	width := 50
+	filled := percent * width / 100
+	fmt.Printf("[%s%s] %d%%\n",
+		strings.Repeat("█", filled),
+		strings.Repeat("░", width-filled),
+		percent)
 }
 
 func ansi(code string) string {
@@ -351,6 +414,13 @@ func ansi(code string) string {
 
 func min(a, b int) int {
 	if a < b {
+		return a
+	}
+	return b
+}
+
+func max(a, b int) int {
+	if a > b {
 		return a
 	}
 	return b
