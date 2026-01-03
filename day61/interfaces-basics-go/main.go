@@ -79,7 +79,7 @@ func demoInterfaceComposition() {
 	// Пример полиморфизма
 	var speakers []Speaker = []Speaker{
 		Human{Name: "Гоша", Age: 38, Energy: 100},
-		Human{Name: "Наставник", Age: 35, Energy: 90},
+		Human{Name: "Наставник", Age: 47, Energy: 90},
 	}
 
 	for _, s := range speakers {
