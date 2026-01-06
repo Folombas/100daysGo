@@ -34,7 +34,7 @@ func NewApp() *App {
 	return &App{
 		currentDate: now,
 		rng:         rand.New(rand.NewPCG(uint64(now.UnixNano()), uint64(now.Unix()))),
-		DailyTopic:  "Embedding Interfaces", // ← МЕНЯТЬ ЭТУ СТРОКУ КАЖДЫЙ ДЕНЬ
+		DailyTopic:  "Interfaces: Type Assertions", // ← МЕНЯТЬ ЭТУ СТРОКУ КАЖДЫЙ ДЕНЬ
 		progress: map[string]Progress{
 			"100daysGo": {
 				DaysCount:  hundredDays,
