@@ -63,7 +63,7 @@ func main() {
 	}
 
 	printManifesto()
-	printDailyTopic("Interfaces: Type Switch", go365Day)
+	printDailyTopic("Generics in Go Programming Language", go365Day)
 	printFooter(go365Day)
 }
 
