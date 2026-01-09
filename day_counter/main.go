@@ -11,12 +11,6 @@ type Challenge struct {
 	TotalDays int
 }
 
-type Progress struct {
-	DaysCount int
-	Level     int
-	TotalXP   int
-}
-
 func main() {
 	challenges := map[string]Challenge{
 		"100daysGo": {"100daysGo", "2025-11-03", 100},
@@ -24,47 +18,23 @@ func main() {
 	}
 
 	currentDate := time.Now()
-	fmt.Printf("\n🚫 НИКАКИХ РАЗВЛЕЧЕНИЙ — ТОЛЬКО GO\n")
-	fmt.Println("════════════════════════════════════")
-
-	// Рассчитываем день от начала года (1 января = день 1)
 	jan1 := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	go365Day := int(currentDate.Sub(jan1).Hours()/24) + 1
-	if go365Day < 1 {
-		go365Day = 1
-	}
+	go365Day := calculateGo365Day(currentDate, jan1)
 
-	fmt.Printf("📅 %s | 🔥 День %d абсолютного фокуса\n",
-		currentDate.Format("02.01.2006"), go365Day)
-	fmt.Printf("🧠 Уровень концентрации: %s\n\n", getFocusLevel(go365Day))
-
-	// Прогресс по челленджам
-	fmt.Println("📊 ПРОГРЕСС ЧЕЛЛЕНДЖЕЙ")
-	for name, challenge := range challenges {
-		days := calculateDays(challenge.StartDate, currentDate)
-		percent := days * 100 / challenge.TotalDays
-		if percent > 100 {
-			percent = 100
-		}
-
-		// Для Go365 используем исправленный расчёт
-		if name == "Go365" {
-			days = go365Day
-			percent = days * 100 / 365
-		}
-
-		level := days/10 + 1
-		if level > 10 {
-			level = 10
-		}
-
-		fmt.Printf("\n▸ %s: День %d | Ур.%d\n", name, days, level)
-		printProgressBar(percent)
-	}
-
-	printManifesto()
+	printHeader(currentDate, go365Day)
+	printChallengesProgress(challenges, currentDate, go365Day)
+	printFocusManifesto()
+	printAllowedActivities()
 	printDailyTopic("Generics in Go Programming Language: Type Inference", go365Day)
 	printFooter(go365Day)
+}
+
+func calculateGo365Day(currentDate, jan1 time.Time) int {
+	days := int(currentDate.Sub(jan1).Hours()/24) + 1
+	if days < 1 {
+		days = 1
+	}
+	return days
 }
 
 func calculateDays(startDate string, currentDate time.Time) int {
@@ -73,7 +43,15 @@ func calculateDays(startDate string, currentDate time.Time) int {
 	if days < 0 {
 		days = 0
 	}
-	return days + 1 // +1 чтобы первый день был 1, а не 0
+	return days + 1
+}
+
+func printHeader(date time.Time, go365Day int) {
+	fmt.Printf("\n🚫 НИКАКИХ РАЗВЛЕЧЕНИЙ — ТОЛЬКО GO\n")
+	fmt.Println("════════════════════════════════════")
+	fmt.Printf("📅 %s | 🔥 День %d абсолютного фокуса\n",
+		date.Format("02.01.2006"), go365Day)
+	fmt.Printf("🧠 Уровень концентрации: %s\n\n", getFocusLevel(go365Day))
 }
 
 func getFocusLevel(days int) string {
@@ -89,38 +67,88 @@ func getFocusLevel(days int) string {
 	}
 }
 
+func printChallengesProgress(challenges map[string]Challenge, currentDate time.Time, go365Day int) {
+	fmt.Println("📊 ПРОГРЕСС ЧЕЛЛЕНДЖЕЙ")
+
+	for name, challenge := range challenges {
+		days, percent, level := calculateChallengeProgress(name, challenge, currentDate, go365Day)
+		fmt.Printf("\n▸ %s: День %d | Ур.%d\n", name, days, level)
+		printProgressBar(percent)
+	}
+}
+
+func calculateChallengeProgress(name string, challenge Challenge, currentDate time.Time, go365Day int) (days, percent, level int) {
+	if name == "Go365" {
+		days = go365Day
+	} else {
+		days = calculateDays(challenge.StartDate, currentDate)
+	}
+
+	percent = days * 100 / challenge.TotalDays
+	if percent > 100 {
+		percent = 100
+	}
+
+	level = days/10 + 1
+	if level > 10 {
+		level = 10
+	}
+
+	return days, percent, level
+}
+
 func printProgressBar(percent int) {
-	width := 30
+	const width = 30
 	filled := percent * width / 100
-	empty := width - filled
 
 	fmt.Print("   [")
-	for i := 0; i < filled; i++ {
-		fmt.Print("█")
-	}
-	for i := 0; i < empty; i++ {
-		fmt.Print("░")
+	for i := 0; i < width; i++ {
+		if i < filled {
+			fmt.Print("█")
+		} else {
+			fmt.Print("░")
+		}
 	}
 	fmt.Printf("] %d%%\n", percent)
 }
 
-func printManifesto() {
+func printFocusManifesto() {
 	fmt.Println("\n📜 МАНИФЕСТ ФОКУСА")
-	fmt.Println("   ┌─────────────────────────────────────────┐")
-
-	items := []string{
+	printBoxedItems([]string{
 		"БАРЫ/КЛУБЫ      → ❌ НЕТ",
 		"ФИЛЬМЫ/СЕРИАЛЫ → ❌ НЕТ",
 		"ВИДЕОИГРЫ      → ❌ НЕТ",
 		"SCROLL         → ❌ НЕТ",
 		"ПУСТЫЕ РАЗГОВОРЫ С ТРОЛЛЯМИ → ❌ НЕТ",
-	}
+	})
+	fmt.Println("   ✅ РАЗРЕШЕНО: GO + КОД + ДОКУМЕНТАЦИЯ")
+}
 
+func printAllowedActivities() {
+	fmt.Println("\n🎯 ФОКУС НА РАЗВИТИИ")
+	printBoxedItems([]string{
+		"ПИСАТЬ КОД                     → ✅ ДА",
+		"ОСНОВЫ LINUX                   → ✅ ДА",
+		"TERMINAL                       → ✅ ДА",
+		"DOCKER                         → ✅ ДА",
+		"АЛГОРИТМЫ И СТРУКТУРЫ ДАННЫХ  → ✅ ДА",
+		"ЧИТАТЬ ДОКУМЕНТАЦИЮ            → ✅ ДА",
+		"СОЗДАВАТЬ ПРОЕКТЫ             → ✅ ДА",
+		"РЕШАТЬ ЗАДАЧИ НА LEETCODE      → ✅ ДА",
+		"ИЗУЧАТЬ АРХИТЕКТУРУ ПО         → ✅ ДА",
+		"ПИСАТЬ ТЕСТЫ                   → ✅ ДА",
+		"РАБОТАТЬ С GIT                 → ✅ ДА",
+		"ЧИТАТЬ ЧУЖОЙ КОД               → ✅ ДА",
+	})
+	fmt.Println("   🔥 НАПИСАТЬ КОД ЛУЧШЕ, ЧЕМ НАПИСАТЬ ОПРАВДАНИЯ ТРОЛЛЯМ")
+}
+
+func printBoxedItems(items []string) {
+	fmt.Println("   ┌─────────────────────────────────────────┐")
 	for _, item := range items {
 		fmt.Printf("   │ %-40s │\n", item)
 	}
 	fmt.Println("   └─────────────────────────────────────────┘")
-	fmt.Println("   ✅ РАЗРЕШЕНО: GO + КОД + ДОКУМЕНТАЦИЯ")
 }
 
 func printDailyTopic(topic string, day int) {
@@ -138,7 +166,6 @@ func printDailyTopic(topic string, day int) {
 		fmt.Printf("   %s\n", task)
 	}
 
-	// Уровень понимания зависит от дня
 	understanding := (day % 10) + 1
 	fmt.Printf("\n   🎯 Уровень понимания: %d/10\n", understanding)
 }
@@ -151,9 +178,11 @@ func printFooter(day int) {
 		"«Распыление создаёт дилетантов. Фокус — мастеров»",
 		"«Мои тусовки — это коммиты. Мои друзья — это горутины»",
 		"«1 час кода стоит 10 часов скроллинга»",
+		"«Тролли кормятся вниманием. Лишай их питания — пиши код»",
+		"«Лучший ответ троллю — твой следующий коммит»",
 	}
 
-	quoteIndex := day % len(quotes)
-	fmt.Printf("💬 %s\n", quotes[quoteIndex])
+	fmt.Printf("💬 %s\n", quotes[day%len(quotes)])
 	fmt.Println("\n🚀 GO ИЛИ НИЧЕГО. КОД ИЛИ НИЧЕГО.")
+	fmt.Println("   🔥 НЕ ОТВЕЧАЙ НА ТРОЛЛЕЙ — ОТВЕЧАЙ КОДОМ")
 }
