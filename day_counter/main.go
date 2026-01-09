@@ -63,7 +63,7 @@ func main() {
 	}
 
 	printManifesto()
-	printDailyTopic("Generics in Go Programming Language", go365Day)
+	printDailyTopic("Generics in Go Programming Language: Type Inference", go365Day)
 	printFooter(go365Day)
 }
 
