@@ -2,16 +2,13 @@ package main
 
 import (
 	"fmt"
-	"strings"
 	"time"
-	"unicode"
 )
 
 // Конфигурация
 const (
 	DATE_FORMAT = "02.01.2006"
-	BAR_WIDTH   = 30
-	BOX_WIDTH   = 44 // Общая ширина рамки (включая границы)
+	BAR_WIDTH   = 25
 )
 
 // Структуры данных
@@ -22,9 +19,18 @@ type Challenge struct {
 }
 
 type DailyTopic struct {
-	Title    string
-	Tasks    []string
-	MinLines int
+	Title      string
+	Tasks      []string
+	MinLines   int
+	Category   string
+	Complexity string
+	Priority   int
+}
+
+type EcoSystemFocus struct {
+	Category string
+	Skills   []string
+	Progress int // 0-100%
 }
 
 // Основная функция
@@ -41,23 +47,58 @@ func main() {
 
 	// Тема дня
 	todayTopic := DailyTopic{
-		Title: "Generics in Go Programming Language: Type Constraints",
+		Title:      "Generics in Go Programming Language: Type Constraints",
+		MinLines:   100,
+		Category:   "Go Core",
+		Complexity: "Intermediate",
+		Priority:   1,
 		Tasks: []string{
-			"100+ строк кода по теме",
-			"Прочитать документацию по type constraints",
-			"Написать примеры с comparable и any",
-			"Создать конспект в Obsidian",
-			"Поделиться инсайтами в TG-канале",
+			"Изучить документацию по Type Parameters",
+			"Разобрать примеры с comparable и any",
+			"Написать generic функции для работы с коллекциями",
+			"Понять ограничения type constraints",
+			"Создать свой generic тип с методами",
+			"Прочитать статью о performance implications",
+			"Решить 3 задачи на LeetCode с использованием generics",
 		},
-		MinLines: 100,
+	}
+
+	// Фокус на экосистеме
+	ecosystemFocus := []EcoSystemFocus{
+		{
+			Category: "Go Core",
+			Skills:   []string{"Goroutines", "Channels", "Interfaces", "Generics", "Reflection"},
+			Progress: 65,
+		},
+		{
+			Category: "Linux & Terminal",
+			Skills:   []string{"Bash Scripting", "Systemd", "Networking", "Permissions", "Process Management"},
+			Progress: 40,
+		},
+		{
+			Category: "DevOps & Containers",
+			Skills:   []string{"Docker", "Docker Compose", "CI/CD", "Kubernetes Basics", "Monitoring"},
+			Progress: 30,
+		},
+		{
+			Category: "Databases",
+			Skills:   []string{"PostgreSQL", "Redis", "MongoDB", "SQL Optimization", "Migrations"},
+			Progress: 25,
+		},
+		{
+			Category: "Backend Development",
+			Skills:   []string{"REST APIs", "gRPC", "Authentication", "Testing", "Logging"},
+			Progress: 50,
+		},
 	}
 
 	// Вывод
 	printHeader(today, go365Day)
+	printTopic(&todayTopic, go365Day)
 	printChallengesProgress(challenges, today, go365Day)
-	printTopicBox(&todayTopic, go365Day)
+	printEcosystemFocus(ecosystemFocus)
 	printFocusManifesto()
-	printAllowedActivities()
+	printDevRules()
 	printFooter(go365Day)
 }
 
@@ -84,44 +125,72 @@ func getFocusLevel(day int) string {
 	}
 }
 
-// Вычисляет видимую ширину строки с учетом кириллицы (2 символа на букву)
-func visibleWidth(s string) int {
-	width := 0
-	for _, r := range s {
-		if r <= 127 {
-			width++ // ASCII символы
-		} else if unicode.Is(unicode.Cyrillic, r) {
-			width += 2 // Кириллица
-		} else {
-			width++ // Остальные символы (эмодзи, пунктуация)
-		}
+func getUnderstandingEmoji(level int) string {
+	switch {
+	case level >= 8:
+		return "🎯"
+	case level >= 5:
+		return "⚡"
+	default:
+		return "📚"
 	}
-	return width
-}
-
-// Создает строку с выравниванием по заданной ширине
-func padToWidth(s string, width int) string {
-	visible := visibleWidth(s)
-	if visible >= width {
-		return s
-	}
-	return s + strings.Repeat(" ", width-visible)
 }
 
 // ========== ВЫВОД ==========
 
 func printHeader(date time.Time, day int) {
-	fmt.Printf("\n🚫 НИКАКИХ РАЗВЛЕЧЕНИЙ — ТОЛЬКО GO\n")
-	fmt.Println(strings.Repeat("═", 50))
-	fmt.Printf("📅 %s | 🔥 День %d абсолютного фокуса\n", date.Format(DATE_FORMAT), day)
+	fmt.Println()
+	fmt.Println("🚫 НИКАКИХ РАЗВЛЕЧЕНИЙ — ТОЛЬКО GO")
+	fmt.Println("═" + repeatString("═", 48))
+	fmt.Printf("📅 %s | %d День %d абсолютного фокуса\n",
+		date.Format(DATE_FORMAT), getDaySymbol(day), day)
 	fmt.Printf("🧠 Уровень концентрации: %s\n\n", getFocusLevel(day))
+}
+
+func getDaySymbol(day int) string {
+	// Используем кружочки для дней
+	if day <= 30 {
+		return "①"
+	}
+	// Для больших чисел показываем номер
+	return fmt.Sprintf("%d", day)
+}
+
+func printTopic(topic *DailyTopic, day int) {
+	fmt.Println("📚 ТЕМА ДНЯ")
+	fmt.Println()
+	fmt.Printf("%s\n", topic.Title)
+	fmt.Printf("%s | %s | Приоритет: %d/3\n",
+		topic.Category, topic.Complexity, topic.Priority)
+
+	understanding := (day % 10) + 1
+	emoji := getUnderstandingEmoji(understanding)
+
+	fmt.Printf("\n%s Уровень понимания: %d/10\n", emoji, understanding)
+	fmt.Printf("🎯 Цель: %d+ строк кода\n\n", topic.MinLines)
+
+	fmt.Println("📋 ЗАДАЧИ:")
+	for i, task := range topic.Tasks {
+		fmt.Printf("  %d. %s\n", i+1, task)
+		if i == 2 && len(topic.Tasks) > 4 {
+			remaining := len(topic.Tasks) - 3
+			fmt.Printf("     ...и ещё %d задач\n", remaining)
+			break
+		}
+	}
+
+	fmt.Println("\n" + repeatString("─", 50))
 }
 
 func printChallengesProgress(challenges map[string]Challenge, today time.Time, go365Day int) {
 	fmt.Println("📊 ПРОГРЕСС ЧЕЛЛЕНДЖЕЙ")
 	fmt.Println()
 
-	for name, ch := range challenges {
+	// Сначала Go365, потом 100daysGo
+	order := []string{"Go365", "100daysGo"}
+
+	for _, name := range order {
+		ch := challenges[name]
 		days := calcChallengeDays(name, ch, today, go365Day)
 		percent := days * 100 / ch.TotalDays
 		if percent > 100 {
@@ -129,10 +198,13 @@ func printChallengesProgress(challenges map[string]Challenge, today time.Time, g
 		}
 		level := min(days/10+1, 10)
 
-		fmt.Printf("%s: День %d | Ур.%d\n", name, days, level)
-		printProgressBar(percent)
+		fmt.Printf("%s\n", name)
+		fmt.Printf("  День %d | Уровень %d\n", days, level)
+		printSimpleProgressBar(percent)
 		fmt.Println()
 	}
+
+	fmt.Println(repeatString("─", 50))
 }
 
 func calcChallengeDays(name string, ch Challenge, today time.Time, go365Day int) int {
@@ -147,7 +219,7 @@ func calcChallengeDays(name string, ch Challenge, today time.Time, go365Day int)
 	return days
 }
 
-func printProgressBar(percent int) {
+func printSimpleProgressBar(percent int) {
 	fmt.Print("  [")
 	filled := percent * BAR_WIDTH / 100
 	for i := 0; i < BAR_WIDTH; i++ {
@@ -160,154 +232,112 @@ func printProgressBar(percent int) {
 	fmt.Printf("] %d%%", percent)
 }
 
-func printTopicBox(topic *DailyTopic, day int) {
-	fmt.Println("📚 ТЕМА ДНЯ")
-	printBoxTop()
-
-	// Заголовок темы (может быть многострочным)
-	titleLines := splitToLines(topic.Title, BOX_WIDTH-4)
-	for _, line := range titleLines {
-		fmt.Printf("│ %-40s │\n", padToWidth(line, BOX_WIDTH-4))
-	}
-
-	printBoxSeparator()
-
-	// Уровень понимания
-	understanding := (day % 10) + 1
-	emoji := "🟢"
-	switch {
-	case understanding <= 3:
-		emoji = "🔴"
-	case understanding <= 7:
-		emoji = "🟡"
-	}
-
-	fmt.Printf("│ %s │\n", padToWidth(fmt.Sprintf("%s Уровень понимания: %d/10", emoji, understanding), BOX_WIDTH-4))
-	fmt.Printf("│ %s │\n", padToWidth(fmt.Sprintf("Цель: %d+ строк кода", topic.MinLines), BOX_WIDTH-4))
-
-	printBoxSeparator()
-
-	// Задачи
-	for i, task := range topic.Tasks {
-		if i < 3 {
-			fmt.Printf("│ %s │\n", padToWidth(fmt.Sprintf("  • %s", task), BOX_WIDTH-4))
-		}
-	}
-
-	if len(topic.Tasks) > 3 {
-		fmt.Printf("│ %s │\n", padToWidth(fmt.Sprintf("  • ...и ещё %d задач", len(topic.Tasks)-3), BOX_WIDTH-4))
-	}
-
-	printBoxBottom()
+func printEcosystemFocus(focuses []EcoSystemFocus) {
+	fmt.Println("🎯 ФОКУС НА ЭКОСИСТЕМЕ GO")
 	fmt.Println()
+
+	for _, focus := range focuses {
+		fmt.Printf("%s\n", focus.Category)
+		printSimpleProgressBar(focus.Progress)
+		fmt.Println()
+
+		// Показываем первые 3 навыка
+		for i := 0; i < len(focus.Skills) && i < 3; i++ {
+			fmt.Printf("  • %s\n", focus.Skills[i])
+		}
+		if len(focus.Skills) > 3 {
+			fmt.Printf("    +%d more...\n", len(focus.Skills)-3)
+		}
+		fmt.Println()
+	}
+
+	fmt.Println(repeatString("─", 50))
 }
 
 func printFocusManifesto() {
-	fmt.Println("📜 МАНИФЕСТ ФОКУСА")
-	printBoxTop()
-
-	items := []string{
-		"БАРЫ/КЛУБЫ                  → ❌ НЕТ",
-		"ФИЛЬМЫ/СЕРИАЛЫ              → ❌ НЕТ",
-		"ВИДЕОИГРЫ                   → ❌ НЕТ",
-		"SCROLL                      → ❌ НЕТ",
-		"ПУСТЫЕ РАЗГОВОРЫ С ТРОЛЛЯМИ → ❌ НЕТ",
-	}
-
-	for _, item := range items {
-		fmt.Printf("│ %s │\n", padToWidth(item, BOX_WIDTH-4))
-	}
-
-	printBoxBottom()
-	fmt.Println("   ✅ РАЗРЕШЕНО: GO + КОД + ДОКУМЕНТАЦИЯ")
+	fmt.Println("📜 МАНИФЕСТ ПОЛНОГО ПОГРУЖЕНИЯ")
 	fmt.Println()
-}
 
-func printAllowedActivities() {
-	fmt.Println("🎯 ФОКУС НА РАЗВИТИИ")
-	printBoxTop()
-
-	items := []string{
-		"ПИСАТЬ КОД                     → ✅ ДА",
-		"ОСНОВЫ LINUX                   → ✅ ДА",
-		"TERMINAL                       → ✅ ДА",
-		"DOCKER                         → ✅ ДА",
-		"АЛГОРИТМЫ И СТРУКТУРЫ ДАННЫХ   → ✅ ДА",
-		"ЧИТАТЬ ДОКУМЕНТАЦИЮ            → ✅ ДА",
-		"СОЗДАВАТЬ ПРОЕКТЫ              → ✅ ДА",
-		"РЕШАТЬ ЗАДАЧИ НА LEETCODE      → ✅ ДА",
-		"ИЗУЧАТЬ АРХИТЕКТУРУ ПО         → ✅ ДА",
-		"ПИСАТЬ ТЕСТЫ                   → ✅ ДА",
-		"РАБОТАТЬ С GIT                 → ✅ ДА",
-		"ЧИТАТЬ ЧУЖОЙ КОД               → ✅ ДА",
+	fmt.Println("❌ ЗАПРЕЩЕНО:")
+	negativeItems := []string{
+		"БАРЫ / КЛУБЫ",
+		"ФИЛЬМЫ / СЕРИАЛЫ",
+		"ВИДЕОИГРЫ",
+		"БЕССМЫСЛЕННЫЙ SCROLL",
+		"ПУСТЫЕ РАЗГОВОРЫ С ТРОЛЛЯМИ",
+		"СОЦИАЛЬНЫЕ СЕТИ",
+		"НОВОСТНЫЕ ЛЕНТЫ",
 	}
 
-	for _, item := range items {
-		fmt.Printf("│ %s │\n", padToWidth(item, BOX_WIDTH-4))
+	for _, item := range negativeItems {
+		fmt.Printf("  × %s\n", item)
 	}
 
-	printBoxBottom()
-	fmt.Println("   🔥 НАПИСАТЬ КОД ЛУЧШЕ, ЧЕМ НАПИСАТЬ ОПРАВДАНИЯ ТРОЛЛЯМ")
+	fmt.Println("\n✅ РАЗРЕШЕНО:")
+	fmt.Println("  ✓ GO + КОД + ДОКУМЕНТАЦИЯ")
+	fmt.Println("  ✓ ТЕХНИЧЕСКИЕ СТАТЬИ И КНИГИ")
+	fmt.Println("  ✓ ОБСУЖДЕНИЯ ТЕХНИЧЕСКИХ ВОПРОСОВ")
+	fmt.Println("  ✓ СОЗДАНИЕ ПРОЕКТОВ")
 	fmt.Println()
+
+	fmt.Println(repeatString("─", 50))
 }
 
-// Вспомогательные функции для рисования рамок
-func printBoxTop() {
-	fmt.Printf("┌%s┐\n", strings.Repeat("─", BOX_WIDTH-2))
-}
+func printDevRules() {
+	fmt.Println("⚡ ПРАВИЛА GO-РАЗРАБОТЧИКА")
+	fmt.Println()
 
-func printBoxBottom() {
-	fmt.Printf("└%s┘\n", strings.Repeat("─", BOX_WIDTH-2))
-}
-
-func printBoxSeparator() {
-	fmt.Printf("├%s┤\n", strings.Repeat("─", BOX_WIDTH-2))
-}
-
-// Разделяет длинную строку на несколько строк
-func splitToLines(text string, maxWidth int) []string {
-	var lines []string
-	words := strings.Fields(text)
-
-	if len(words) == 0 {
-		return []string{""}
+	rules := []string{
+		"1. Код > Оправданий",
+		"2. Коммит > Скроллинга",
+		"3. Документация > Догадок",
+		"4. Тесты > Уверенности",
+		"5. Простота > Умности",
+		"6. Практика > Теории",
+		"7. Git > Памяти",
+		"8. Docker > 'У меня работает'",
 	}
 
-	currentLine := words[0]
-
-	for _, word := range words[1:] {
-		if visibleWidth(currentLine+" "+word) <= maxWidth {
-			currentLine += " " + word
-		} else {
-			lines = append(lines, currentLine)
-			currentLine = word
-		}
+	for _, rule := range rules {
+		fmt.Printf("  %s\n", rule)
 	}
 
-	if currentLine != "" {
-		lines = append(lines, currentLine)
-	}
-
-	return lines
+	fmt.Println()
+	fmt.Println(repeatString("─", 50))
 }
 
 func printFooter(day int) {
-	fmt.Println(strings.Repeat("═", 50))
+	fmt.Println()
 
 	quotes := []string{
-		"«Каждый день кода — шаг к свободе»",
-		"«Распыление создаёт дилетантов. Фокус — мастеров»",
-		"«Мои тусовки — это коммиты. Мои друзья — это горутины»",
-		"«1 час кода стоит 10 часов скроллинга»",
-		"«Тролли кормятся вниманием. Лишай их питания — пиши код»",
-		"«Лучший ответ троллю — твой следующий коммит»",
-		"«Код не врёт в отличие людей»",
-		"«Компилятор — самый честный критик»",
+		"«Системный подход к обучению создаёт системного разработчика»",
+		"«Каждый коммит — шаг к мастерству в Go и его экосистеме»",
+		"«Инвестиции в знания Go, Linux и DevOps окупаются экспоненциально»",
+		"«1 час целенаправленного кода на Go стоит 10 часов поверхностного изучения»",
+		"«Экосистема — это не только язык, но и окружение, инструменты, практики»",
+		"«Контейнеризация знания: Docker для кода, Kubernetes для карьеры»",
+		"«Базы данных — память приложения, алгоритмы — его интеллект»",
+		"«Полное погружение в Go: от горутин до продакшн-деплоя»",
 	}
 
-	fmt.Printf("💬 %s\n", quotes[day%len(quotes)])
-	fmt.Println("\n🚀 GO ИЛИ НИЧЕГО. КОД ИЛИ НИЧЕГО.")
-	fmt.Println("   🔥 НЕ ОТВЕЧАЙ НА ТРОЛЛЕЙ — ОТВЕЧАЙ КОДОМ")
+	fmt.Printf("💭 %s\n\n", quotes[day%len(quotes)])
+
+	fmt.Println("🚀 GO ИЛИ НИЧЕГО")
+	fmt.Println("   КОД ИЛИ НИЧЕГО")
+	fmt.Println("   СИСТЕМНЫЙ ПОДХОД ИЛИ НИЧЕГО")
+	fmt.Println()
+	fmt.Println("🔥 НЕ ОТВЕЧАЙ НА ТРОЛЛЕЙ — ОТВЕЧАЙ КОДОМ")
+	fmt.Println("   НЕ ОПРАВДЫВАЙСЯ — КОММИТЬ")
+	fmt.Println("   НЕ ОТВЛЕКАЙСЯ — УГЛУБЛЯЙСЯ")
+}
+
+// Вспомогательная функция для повторения строки
+func repeatString(s string, count int) string {
+	result := ""
+	for i := 0; i < count; i++ {
+		result += s
+	}
+	return result
 }
 
 // Вспомогательная функция для Go 1.20 и ниже
