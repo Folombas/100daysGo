@@ -43,7 +43,7 @@ var (
 	}
 
 	todayTopic = DailyTopic{
-		Title:      "Generics in Go Programming Language: Generic Types / Interfaces",
+		Title:      "Generics in Go Programming Language: Generic Functions",
 		MinLines:   100,
 		Category:   "Go Core",
 		Complexity: "Intermediate",
