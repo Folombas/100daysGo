@@ -43,7 +43,7 @@ var (
 	}
 
 	todayTopic = DailyTopic{
-		Title:      "Generics in Go Programming Language: Generic Functions",
+		Title:      "Generics in Go Programming Language: Why Generics?",
 		MinLines:   100,
 		Category:   "Go Core",
 		Complexity: "Intermediate",
