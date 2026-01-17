@@ -43,7 +43,7 @@ var (
 	}
 
 	todayTopic = DailyTopic{
-		Title:      "Code organization: Modules & Dependencies: go mod init",
+		Title:      "Code organization: Modules & Dependencies: go mod tidy",
 		MinLines:   100,
 		Category:   "Go Core",
 		Complexity: "Intermediate",
