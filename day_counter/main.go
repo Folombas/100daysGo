@@ -43,7 +43,7 @@ var (
 	}
 
 	todayTopic = DailyTopic{
-		Title:      "Code organization: Modules & Dependencies: go mod vendor",
+		Title:      "Code organization: Error Handling: Error Handling Basics",
 		MinLines:   100,
 		Category:   "Go Core",
 		Complexity: "Intermediate",
