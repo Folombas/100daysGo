@@ -43,7 +43,7 @@ var (
 	}
 
 	todayTopic = DailyTopic{
-		Title:      "Code organization: Error Handling: fmt.Errorf",
+		Title:      "Code organization: Error Handling: Wrapping/Unwrapping Errors",
 		MinLines:   100,
 		Category:   "Go Core",
 		Complexity: "Intermediate",
