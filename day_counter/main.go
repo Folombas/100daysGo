@@ -43,7 +43,7 @@ var (
 	}
 
 	todayTopic = DailyTopic{
-		Title:      "Code organization: Error Handling: Sentinel Errors",
+		Title:      "Code organization: Error Handling: panic and recover",
 		MinLines:   100,
 		Category:   "Go Core",
 		Complexity: "Intermediate",
