@@ -43,7 +43,7 @@ var (
 	}
 
 	todayTopic = DailyTopic{
-		Title:      "Code organization: Error Handling: panic and recover",
+		Title:      "Code organization: Error Handling: Stack Traces & Debugging",
 		MinLines:   100,
 		Category:   "Go Core",
 		Complexity: "Intermediate",
