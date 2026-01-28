@@ -43,7 +43,7 @@ var (
 	}
 
 	todayTopic = DailyTopic{
-		Title:      "Code organization: Error Handling: Stack Traces & Debugging",
+		Title:      "Publishing Modules: Concurrency: Goroutines",
 		MinLines:   100,
 		Category:   "Go Core",
 		Complexity: "Intermediate",
