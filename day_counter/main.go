@@ -43,7 +43,7 @@ var (
 	}
 
 	todayTopic = DailyTopic{
-		Title:      "Publishing Modules: Concurrency: Channels",
+		Title:      "Channels: Select Statement",
 		MinLines:   100,
 		Category:   "Go Core",
 		Complexity: "Intermediate",
