@@ -43,7 +43,7 @@ var (
 	}
 
 	todayTopic = DailyTopic{
-		Title:      "Channels: Select Statement",
+		Title:      "Channels: Buffered vs Unbuffered",
 		MinLines:   100,
 		Category:   "Go Core",
 		Complexity: "Intermediate",
