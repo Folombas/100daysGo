@@ -1,0 +1,13 @@
+# Быстрый старт:
+go mod tidy
+go run main.go
+
+# Тестирование работы каналов:
+go run main.go buffered
+go run main.go unbuffered
+
+# Анализ deadlock:
+go run main.go deadlock
+
+# Бенчмарк (если добавите тесты):
+go test -bench=.
