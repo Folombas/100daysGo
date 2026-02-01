@@ -43,7 +43,7 @@ var (
 	}
 
 	todayTopic = DailyTopic{
-		Title:      "Channels: Buffered vs Unbuffered",
+		Title:      "Deadlines & Cancellations in Golang Developing",
 		MinLines:   100,
 		Category:   "Go Core",
 		Complexity: "Intermediate",
