@@ -43,7 +43,7 @@ var (
 	}
 
 	todayTopic = DailyTopic{
-		Title:      "Deadlines & Cancellations in Golang Developing",
+		Title:      "Common Usecases in Golang Programming",
 		MinLines:   100,
 		Category:   "Go Core",
 		Complexity: "Intermediate",
