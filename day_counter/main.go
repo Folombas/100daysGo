@@ -43,7 +43,7 @@ var (
 	}
 
 	todayTopic = DailyTopic{
-		Title:      "Context package in Golang",
+		Title:      "Sync Package in Golang",
 		MinLines:   100,
 		Category:   "Go Core",
 		Complexity: "Intermediate",
