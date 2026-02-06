@@ -43,7 +43,7 @@ var (
 	}
 
 	todayTopic = DailyTopic{
-		Title:      "Sync Package: Mutexes in Golang",
+		Title:      "Sync Package: WaitGroups in Golang",
 		MinLines:   100,
 		Category:   "Go Core",
 		Complexity: "Intermediate",
