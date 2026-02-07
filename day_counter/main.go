@@ -43,7 +43,7 @@ var (
 	}
 
 	todayTopic = DailyTopic{
-		Title:      "Sync Package: WaitGroups in Golang",
+		Title:      "Concurrency Patterns in Golang",
 		MinLines:   100,
 		Category:   "Go Core",
 		Complexity: "Intermediate",
