@@ -43,7 +43,7 @@ var (
 	}
 
 	todayTopic = DailyTopic{
-		Title:      "Concurrency Patterns: Fan-in in Golang",
+		Title:      "Concurrency Patterns: Fan-out in Golang",
 		MinLines:   100,
 		Category:   "Go Core",
 		Complexity: "Intermediate",
