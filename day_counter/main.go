@@ -43,7 +43,7 @@ var (
 	}
 
 	todayTopic = DailyTopic{
-		Title:      "Concurrency Patterns: Race Detection",
+		Title:      "Standard Library: I/O & File Handling",
 		MinLines:   100,
 		Category:   "Go Core",
 		Complexity: "Intermediate",
