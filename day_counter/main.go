@@ -43,7 +43,7 @@ var (
 	}
 
 	todayTopic = DailyTopic{
-		Title:      "Standard Library: I/O & File Handling",
+		Title:      "Standard Library: I/O & File Handling: Encoding / JSON",
 		MinLines:   100,
 		Category:   "Go Core",
 		Complexity: "Intermediate",
